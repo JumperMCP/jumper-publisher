@@ -1,0 +1,20 @@
+{
+  "manifest": {
+    "version": "0.1.14",
+    "commit": "c13ecb5451843ea9eb633f2560f7858c34a1e9ed",
+    "schema": 1,
+    "migration_tag": "v1",
+    "durable_object_class": "Publisher",
+    "compatibility_date": "2026-09-01",
+    "modules": [
+      {
+        "name": "worker.js",
+        "sha256": "9219e36e8d229d396b646fd5a8c7502d6d2c81993b3ddd777fe8a94a96c0ba3c",
+        "size": 2023485,
+        "type": "application/javascript+module"
+      }
+    ],
+    "notes": "# 0.1.14 — Claude connectors and per-app access\n\n- **Claude on the web, Desktop and mobile can connect.** The Claude connector callback `https://claude.ai/api/mcp/auth_callback` is now built in, next to the ChatGPT callback. Both are part of the code, so an update enables them even when the Worker variables are older than this release.\n- **`CHATGPT_CALLBACKS` is renamed `ALLOWED_CALLBACKS`.** It now only adds extra callbacks to the built-in ones. Existing installs keep their `CHATGPT_CALLBACKS` value, and it is still read when `ALLOWED_CALLBACKS` is not set.\n- **AI connections panel.** The cockpit panel \"ChatGPT connection\" is now \"AI connections\". It lists every connected AI app with where it signs in from, the approval date and the last use, and has a **Revoke** button for each one. Revoking signs out that app only. Resetting the password still signs out all of them.\n- **Sign-in from apps on your computer is a cockpit switch.** Claude Code and other local apps sign in through a `localhost` callback. The owner can now turn this on and off under AI connections → AI apps on this computer. The `ALLOW_LOOPBACK_CALLBACKS=true` Worker variable still forces it on.\n- **Tool titles.** Every MCP tool now has a human-readable title, which the Claude connector directory requires.\n\nNo migration, credential, or origin changes.\n\n# 0.1.13 — opt-in sign-in for local AI clients\n\nThe Publisher can now accept sign-in from MCP clients that run on your own computer, such as coding agents in a terminal. These clients receive the sign-in result on a `localhost` address with a changing port. This is off by default. To turn it on, set the text variable `ALLOW_LOOPBACK_CALLBACKS` to `true` in the Publisher Worker's Cloudflare settings (Settings → Variables and Secrets). Publisher updates keep this setting.\n\nWhen it is on, loopback callbacks (`http://localhost`, `127.0.0.1`, `[::1]`, any port) are accepted at registration, on the approval page and at approval. The rules are unchanged otherwise: public client, PKCE S256, and no credentials, query or fragment in the callback. When it is off, such a client is refused with a message naming the setting. For a local callback, the approval page warns that any program on that computer can open it, so approve only a sign-in you just started yourself. The approval page now says \"your AI client\" instead of ChatGPT. The configured ChatGPT callback is unchanged.\n\nNo migration, credential, or origin changes.\n"
+  },
+  "signature": "VZujX07GbhBwv4Hyv1HNLaaozsowAcreC4b9yeaDMF6LEzBNtdma4HCMz0pxyY9I6UDoYAH4T0+Ic5SYKK6pAw=="
+}
