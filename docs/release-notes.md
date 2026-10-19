@@ -1,4 +1,4 @@
-# 0.1.14 (unreleased) — Claude connectors and per-app access
+# 0.1.14 — Claude connectors and per-app access
 
 - **Claude on the web, Desktop and mobile can connect.** The Claude connector callback `https://claude.ai/api/mcp/auth_callback` is now built in, next to the ChatGPT callback. Both are part of the code, so an update enables them even when the Worker variables are older than this release.
 - **`CHATGPT_CALLBACKS` is renamed `ALLOWED_CALLBACKS`.** It now only adds extra callbacks to the built-in ones. Existing installs keep their `CHATGPT_CALLBACKS` value, and it is still read when `ALLOWED_CALLBACKS` is not set.
