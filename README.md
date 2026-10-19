@@ -41,20 +41,30 @@ No GitHub, terminal, build step, or OpenAI API key needed.
 
 - Cloudflare account, *free or paid*. The Publisher plugin creates Workers and KVs there on your behalf.
 - ChatGPT account, *free or paid*. Free accounts first enable "developer mode" (Settings → Security & login).
-- Or Claude (web, Desktop, mobile) from 0.1.14, or an AI app on your computer such as Claude Code once you allow it in the cockpit (see Troubleshooting).
+- Or a Claude account (web, Desktop, mobile, Claude Code). See [Using Publisher with Claude](#using-publisher-with-claude).
 
 ## How to install (once)
 
 1. Open [chatgpt-to-public.jumpermcp.dev](https://chatgpt-to-public.jumpermcp.dev/), choose **Install on my Cloudflare**, and sign in to Cloudflare. If you're interrupted, the installer resumes where it stopped.
 2. Open the setup link the installer shows you and create your password. The link is single-use and expires quickly, so nobody else can claim your Publisher.
 3. In your Publisher's **Cloudflare settings**, add a Cloudflare API token with **Edit** permission for **Workers Scripts**. The installer walks you through creating it. Paste the Cloudflare API token *only* in the Publisher, never into ChatGPT. This API token connects your Publisher with your Cloudflare. Jumper MCP (from where you started the installer) will not get to know it.
-4. In ChatGPT, open **Plugins → Add → Custom MCP server** and paste the *MCP URL* from your Publisher's **ChatGPT connection** panel, including `/mcp` at the end. Sign in and approve access.
+4. In ChatGPT, open **Plugins → Add → Custom MCP server** and paste the *MCP URL* from your Publisher's **AI connections** panel, including `/mcp` at the end. Sign in and approve access.
 
 ## How to use (daily)
 
 Prompt away to create new websites. Reference your Publisher plugin to have the result published. To find an oldwebsite, paste its name, project ID, or URL into ChatGPT. It will use Publisher to find the project, without you having to look for the original conversation. Ask to undo, and the previous version goes back online.
 
 Your Publisher's control panel lists every site. From there you can unpublish (hide), export, delete, and update the Publisher itself. If ChatGPT tries to rewrite far more or far less than you asked for (the classic "rest of the code unchanged"), the Publisher flags it instead of publishing. Multiple chats editing the same site are also flagged can't silently overwrite each other (use case: project open in phone session as well as desktop session).
+
+## Using Publisher with Claude
+
+Needs Publisher 0.1.16 or later (update in your Publisher's control panel).
+
+- **Connect:** In Claude, open **Settings → Connectors → Add custom connector** and paste the MCP URL from your Publisher's **AI connections** panel. Claude signs in through claude.ai and registers with a client secret; Publisher accepts that for ChatGPT's and Claude's own callbacks only. A connector added on claude.ai is also available in Claude Desktop, mobile and Claude Code.
+- **Claude Code with its own connection:** `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in. This signs in through `localhost` on your computer, which is off by default: allow it under **AI connections → AI apps on this computer**. Any program on your computer can then ask for access, so approve only sign-ins you just started.
+- **Images, ZIPs and large files:** Claude can only send text through its tools. For anything else, it asks your Publisher for a one-time upload link (valid 10 minutes) and sends the file there from its code sandbox or shell, so the file never passes through the chat. On claude.ai this needs **Settings → Capabilities → Code execution and file creation** on, **Allow network egress** on, and your Publisher's address under **Additional allowed domains** (your `publisher-….workers.dev` host, or `*.workers.dev`). Claude Code needs nothing extra.
+- **After a Publisher update:** In Claude's connector settings, use **Refresh tool list** so Claude sees new tools.
+- **Access:** Each sign-in appears under **AI connections → Connected apps** with **Revoke**. The claude.ai connector used inside Claude Code shares claude.ai's sign-in, so revoking it signs out both.
 
 ## What it can host
 
@@ -78,12 +88,9 @@ Your Publisher's control panel lists every site. From there you can unpublish (h
 
 - **Name already taken by a previous project:** ChatGPT asks you for another name.
 - **ChatGPT can't find your file:** Attach it again rather than letting it recreate the file from memory.
-- **Images, ZIPs and large files from Claude:** Needs Publisher 0.1.16 or later. Claude asks your Publisher for a one-time upload link and sends the file there from its code sandbox (claude.ai) or shell (Claude Code), so the file never passes through the chat. On claude.ai, code execution must be on and allowed to reach your Publisher's `workers.dev` address.
 - **Published but not loading yet:** Try again in a few minutes; the upload itself probably succeeded.
 - **Out of space:** You export and delete old sites. Live sites are never removed to make room.
 - **Publishing event claims token is missing:** Grab a "Worker Scripts" API token from Cloudflare, add it in your Publisher settings (step 3).
-- **Using Claude:** Needs Publisher 0.1.14 or later. In Claude, open Settings → Connectors → Add custom connector and paste the MCP URL from your Publisher's **AI connections** panel.
-- **Using Claude Code or another AI app on your computer:** Needs Publisher 0.1.14 or later. In your Publisher's **AI connections** panel, open *AI apps on this computer* and allow them. Then add the MCP URL (Claude Code: `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in). With this on, any program on your computer can ask for access, so approve only sign-ins you just started yourself. Revoke an app any time in the same panel.
 - Also see: [recovery and uninstall](docs/recovery.md).
 
 ---
