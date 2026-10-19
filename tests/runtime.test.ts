@@ -459,6 +459,10 @@ test("AI connections: owner turns on local sign-in, sees the client, and revokes
         }),
       });
     assert.equal((await register()).status, 400);
+    r = await call("/", { headers: { Cookie: cookie } });
+    html = await r.text();
+    assert.match(html, /Last refused sign-in/);
+    assert.match(html, /http:\/\/localhost:53682\/callback/);
     r = await post("/connections/local", cookie, { csrf, enabled: "true" });
     assert.equal(r.status, 303);
     r = await register();
@@ -526,6 +530,97 @@ test("AI connections: owner turns on local sign-in, sees the client, and revokes
     assert.match(await r.text(), /No AI app is connected yet/);
     r = await post("/connections/local", cookie, { csrf, enabled: "false" });
     assert.equal((await register()).status, 400);
+  } finally {
+    await mf.dispose();
+  }
+});
+test("Claude registers as a confidential client and completes sign-in with its secret", async () => {
+  const mf = await start(),
+    callback = "https://claude.ai/api/mcp/auth_callback";
+  try {
+    const call = (
+      path: string,
+      init: NonNullable<Parameters<Miniflare["dispatchFetch"]>[1]> = {},
+    ) => mf.dispatchFetch(origin + path, { ...init, redirect: "manual" });
+    const form = (cookie: string, fields: Record<string, string>) => ({
+      method: "POST",
+      headers: {
+        Origin: origin,
+        Cookie: cookie,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(fields),
+    });
+    let r = await call(
+      "/setup",
+      form("", { token: "setup-token", password: "a secure owner password" }),
+    );
+    const cookie = r.headers.get("set-cookie")!.split(";")[0];
+    const csrf = (
+      await (await call("/", { headers: { Cookie: cookie } })).text()
+    ).match(/name="csrf" value="([^"]+)"/)![1];
+    r = await call("/oauth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_name: "Claude",
+        redirect_uris: [callback],
+        grant_types: ["authorization_code", "refresh_token"],
+        response_types: ["code"],
+        token_endpoint_auth_method: "client_secret_post",
+      }),
+    });
+    assert.equal(r.status, 201);
+    const client = (await r.json()) as {
+      client_id: string;
+      client_secret: string;
+    };
+    assert.ok(client.client_secret);
+    const verifier = "d".repeat(43);
+    r = await call(
+      "/authorize?" +
+        new URLSearchParams({
+          client_id: client.client_id,
+          redirect_uri: callback,
+          response_type: "code",
+          resource: origin + "/mcp",
+          scope: "projects:read projects:write",
+          state: "s",
+          code_challenge: await challengeFor(verifier),
+          code_challenge_method: "S256",
+        }),
+      { headers: { Cookie: cookie } },
+    );
+    assert.equal(r.status, 200);
+    const handle = (await r.text()).match(/name="handle" value="([^"]+)"/)![1],
+      consentCookie = r.headers.get("set-cookie")!.split(";")[0];
+    r = await call(
+      "/authorize",
+      form(cookie + "; " + consentCookie, {
+        csrf,
+        handle,
+        decision: "approve",
+      }),
+    );
+    assert.equal(r.status, 302);
+    const location = new URL(r.headers.get("Location")!);
+    assert.equal(location.origin + location.pathname, callback);
+    const exchange = (secret: string) =>
+      call("/oauth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: client.client_id,
+          client_secret: secret,
+          code: location.searchParams.get("code")!,
+          code_verifier: verifier,
+          redirect_uri: callback,
+          resource: origin + "/mcp",
+        }),
+      });
+    assert.equal((await exchange("wrong-secret")).status, 401);
+    assert.equal((await exchange(client.client_secret)).status, 200);
   } finally {
     await mf.dispose();
   }

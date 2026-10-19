@@ -77,6 +77,17 @@ export class Publisher extends DurableObject<Env> {
       this.store.get<boolean>("local-sign-in") === true
     );
   }
+  // RPC: keeps the last refused client registration so the owner can see why an app failed to connect.
+  noteRefusedRegistration(metadata: Record<string, unknown>) {
+    const text = (value: unknown) => String(value ?? "").slice(0, 200);
+    const uris = metadata.redirect_uris;
+    this.store.put("refused-registration", {
+      at: Date.now(),
+      name: text(metadata.client_name),
+      callbacks: Array.isArray(uris) ? uris.slice(0, 5).map(text) : [],
+      method: text(metadata.token_endpoint_auth_method ?? "(not sent)"),
+    });
+  }
   private async clients() {
     const oauth = oauthHelpers(this.env),
       { items } = await oauth.listUserGrants("owner", { limit: 100 });
@@ -521,6 +532,7 @@ export class Publisher extends DurableObject<Env> {
           connected: health.state === "connected",
           update,
           clients: await this.clients(),
+          refused: this.store.get("refused-registration"),
           localSignIn: this.localSignInAllowed(),
           localSignInForced: loopbackForced(this.env),
           receipt: {

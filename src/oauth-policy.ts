@@ -47,18 +47,32 @@ export function callbackAllowed(
   return allowed.includes(uri) || (loopback && loopbackCallback(uri));
 }
 
+// Hosted clients may register with a client secret (Claude does; an omitted method means
+// client_secret_basic). Apps on loopback callbacks are public clients (RFC 8252 §8.4).
+// PKCE S256 is required at /authorize either way.
+const HOSTED_AUTH_METHODS = [
+  undefined,
+  "none",
+  "client_secret_basic",
+  "client_secret_post",
+];
 export function registrationAllowed(
   metadata: Record<string, unknown>,
   allowed: string[],
   loopback: boolean,
 ) {
-  return (
-    Array.isArray(metadata.redirect_uris) &&
-    metadata.redirect_uris.length > 0 &&
-    metadata.redirect_uris.every(
+  const uris = metadata.redirect_uris;
+  if (
+    !Array.isArray(uris) ||
+    !uris.length ||
+    !uris.every(
       (uri) =>
         typeof uri === "string" && callbackAllowed(uri, allowed, loopback),
-    ) &&
-    metadata.token_endpoint_auth_method === "none"
-  );
+    )
+  )
+    return false;
+  const method = metadata.token_endpoint_auth_method;
+  return uris.some((uri) => loopbackCallback(uri))
+    ? method === "none"
+    : HOSTED_AUTH_METHODS.includes(method as string | undefined);
 }

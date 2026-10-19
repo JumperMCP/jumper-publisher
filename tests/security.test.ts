@@ -140,7 +140,7 @@ test("callback registration fails closed; loopback destinations only when enable
   }
   assert.equal(
     registrationAllowed({ redirect_uris: allowed }, allowed, true),
-    false,
+    true,
   );
   assert.equal(registrationAllowed(publicClient(allowed[0]), [], true), false);
 });
@@ -243,5 +243,51 @@ test("callbacks: built-in ChatGPT and Claude, plus ALLOWED_CALLBACKS or legacy C
     !callbacks(
       env({ ALLOWED_CALLBACKS: '["http://plain.example/cb"]' }),
     ).includes("http://plain.example/cb"),
+  );
+});
+test("hosted callbacks may register with a client secret; loopback stays public", () => {
+  const claude = "https://claude.ai/api/mcp/auth_callback",
+    allowed = [claude];
+  for (const method of [
+    undefined,
+    "none",
+    "client_secret_basic",
+    "client_secret_post",
+  ])
+    assert.equal(
+      registrationAllowed(
+        { redirect_uris: [claude], token_endpoint_auth_method: method },
+        allowed,
+        false,
+      ),
+      true,
+      String(method),
+    );
+  assert.equal(
+    registrationAllowed(
+      {
+        redirect_uris: [claude],
+        token_endpoint_auth_method: "private_key_jwt",
+      },
+      allowed,
+      false,
+    ),
+    false,
+  );
+  assert.equal(
+    registrationAllowed(
+      { redirect_uris: [claude, "https://attacker.example/cb"] },
+      allowed,
+      false,
+    ),
+    false,
+  );
+  assert.equal(
+    registrationAllowed(
+      { redirect_uris: ["http://localhost:1234/callback"] },
+      allowed,
+      true,
+    ),
+    false,
   );
 });

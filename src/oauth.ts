@@ -28,6 +28,9 @@ async function loopbackEnabled(env: Env) {
 async function registrationError(metadata: Record<string, unknown>, env: Env) {
   const loopback = await loopbackEnabled(env);
   if (registrationAllowed(metadata, callbacks(env), loopback)) return undefined;
+  await env.PUBLISHER.get(
+    env.PUBLISHER.idFromName("installation"),
+  ).noteRefusedRegistration(metadata);
   const uris = metadata.redirect_uris;
   if (
     !loopback &&
@@ -40,7 +43,7 @@ async function registrationError(metadata: Record<string, unknown>, env: Env) {
     };
   return {
     description:
-      "Only the verified ChatGPT and Claude callbacks, or localhost callbacks when enabled, with public-client PKCE are accepted.",
+      "Only the verified ChatGPT and Claude callbacks, or localhost callbacks (public clients) when enabled, are accepted. The Publisher owner can see this refused sign-in under AI connections.",
   };
 }
 

@@ -1,3 +1,10 @@
+# 0.1.15 — Claude sign-in fix and refused sign-in details
+
+- **Claude can register.** Claude.ai registers as a client with a client secret, which 0.1.14 refused ("Couldn't register with … sign-in service"). Apps that return to a hosted callback (ChatGPT, Claude) may now register with or without a secret. Callbacks stay exactly allowlisted, PKCE S256 stays required, and apps on your computer (localhost callbacks) still register without a secret.
+- **Last refused sign-in.** When the Publisher refuses an app's registration, AI connections shows what the app sent: its name, callback and client authentication method. Nothing secret is stored.
+
+No migration, credential, or origin changes.
+
 # 0.1.14 — Claude connectors and per-app access
 
 - **Claude on the web, Desktop and mobile can connect.** The Claude connector callback `https://claude.ai/api/mcp/auth_callback` is now built in, next to the ChatGPT callback. Both are part of the code, so an update enables them even when the Worker variables are older than this release.
