@@ -1,3 +1,11 @@
+# 0.1.16 — upload links for images, ZIPs and large files
+
+- **New tool `create_upload`.** An AI app with a shell or code sandbox, such as Claude Code or Claude with code execution, asks for a one-time upload link and sends the file's bytes there directly (`curl -X PUT --data-binary @FILE …`). It then passes the returned `upload_id` in `uploads` to `stage_project` or `publish_project`. Images, ZIPs and big text files no longer have to pass through the chat, which made them impossible before.
+- **Limits.** Each link works once and expires after 10 minutes. A single file can be up to 10 MiB and a ZIP up to 25 MiB, and at most 20 uploads (100 MiB) can wait at a time. Unused uploads are removed after an hour. Uploads only fill a private draft; nothing becomes public without a publish.
+- **Clear error instead of a silent no-op.** `file_path` without an attached file used to stage nothing without saying so. It now explains that `create_upload` is the way to send a file.
+
+No migration, credential, or origin changes.
+
 # 0.1.15 — Claude sign-in fix and refused sign-in details
 
 - **Claude can register.** Claude.ai registers as a client with a client secret, which 0.1.14 refused ("Couldn't register with … sign-in service"). Apps that return to a hosted callback (ChatGPT, Claude) may now register with or without a secret. Callbacks stay exactly allowlisted, PKCE S256 stays required, and apps on your computer (localhost callbacks) still register without a secret.

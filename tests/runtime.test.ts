@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
+import { zipSync } from "fflate";
 import { sha256 } from "../src/types";
 const origin = "https://publisher.test";
 async function start(extra: Record<string, string> = {}) {
@@ -272,7 +273,7 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
       return response.json() as Promise<any>;
     }
     const tools = await mcp("tools/list");
-    assert.equal(tools.result.tools.length, 11);
+    assert.equal(tools.result.tools.length, 12);
     for (const t of tools.result.tools) {
       assert.ok(t.title, t.name + " needs a title");
       assert.equal(typeof t.annotations.readOnlyHint, "boolean");
@@ -621,6 +622,176 @@ test("Claude registers as a confidential client and completes sign-in with its s
       });
     assert.equal((await exchange("wrong-secret")).status, 401);
     assert.equal((await exchange(client.client_secret)).status, 200);
+  } finally {
+    await mf.dispose();
+  }
+});
+test("upload links: binary file and ZIP reach a draft without passing through MCP", async () => {
+  const mf = await start(),
+    callback = "https://chatgpt.example/callback";
+  try {
+    const call = (
+      path: string,
+      init: NonNullable<Parameters<Miniflare["dispatchFetch"]>[1]> = {},
+    ) => mf.dispatchFetch(origin + path, { ...init, redirect: "manual" });
+    const form = (cookie: string, fields: Record<string, string>) => ({
+      method: "POST",
+      headers: {
+        Origin: origin,
+        Cookie: cookie,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(fields),
+    });
+    let r = await call(
+      "/setup",
+      form("", { token: "setup-token", password: "a secure owner password" }),
+    );
+    const cookie = r.headers.get("set-cookie")!.split(";")[0];
+    const csrf = (
+      await (await call("/", { headers: { Cookie: cookie } })).text()
+    ).match(/name="csrf" value="([^"]+)"/)![1];
+    r = await call("/oauth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        redirect_uris: [callback],
+        token_endpoint_auth_method: "none",
+      }),
+    });
+    const client = (await r.json()) as { client_id: string },
+      verifier = "e".repeat(43);
+    r = await call(
+      "/authorize?" +
+        new URLSearchParams({
+          client_id: client.client_id,
+          redirect_uri: callback,
+          response_type: "code",
+          resource: origin + "/mcp",
+          scope: "projects:read projects:write",
+          state: "s",
+          code_challenge: await challengeFor(verifier),
+          code_challenge_method: "S256",
+        }),
+      { headers: { Cookie: cookie } },
+    );
+    const handle = (await r.text()).match(/name="handle" value="([^"]+)"/)![1];
+    r = await call(
+      "/authorize",
+      form(cookie + "; " + r.headers.get("set-cookie")!.split(";")[0], {
+        csrf,
+        handle,
+        decision: "approve",
+      }),
+    );
+    r = await call("/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: client.client_id,
+        code: new URL(r.headers.get("Location")!).searchParams.get("code")!,
+        code_verifier: verifier,
+        redirect_uri: callback,
+        resource: origin + "/mcp",
+      }),
+    });
+    const { access_token } = (await r.json()) as { access_token: string };
+    const tool = async (name: string, args: unknown) => {
+      const response = await call("/mcp", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + access_token,
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: { name, arguments: args },
+        }),
+      });
+      const result = ((await response.json()) as any).result;
+      return {
+        error: result.isError === true,
+        body: JSON.parse(result.content[0].text),
+      };
+    };
+    const put = (url: string, bytes: Uint8Array) =>
+      mf.dispatchFetch(url, { method: "PUT", body: bytes });
+
+    const png = new Uint8Array(700 * 1024).map((_, i) => (i * 7 + 0x89) % 256);
+    png.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    let link = await tool("create_upload", {
+      path: "images/cake.png",
+      size: png.length,
+    });
+    assert.equal(link.error, false);
+    assert.match(link.body.upload_url, /^https:\/\/publisher\.test\/upload\//);
+    r = await put(link.body.upload_url, png);
+    assert.equal(r.status, 200);
+    assert.equal(((await r.json()) as { size: number }).size, png.length);
+    r = await put(link.body.upload_url, png);
+    assert.equal(r.status, 401, "links are single-use");
+    const staged = await tool("stage_project", {
+      name: "upload-test",
+      base_revision: null,
+      files: { "index.html": '<img src="images/cake.png">' },
+      uploads: [link.body.upload_id],
+    });
+    assert.equal(staged.error, false);
+    assert.equal(staged.body.files["images/cake.png"].size, png.length);
+    const again = await tool("stage_project", {
+      project: staged.body.project,
+      candidate: staged.body.id,
+      base_revision: null,
+      uploads: [link.body.upload_id],
+    });
+    assert.equal(again.error, true, "a staged upload is consumed");
+
+    const zip = zipSync({
+      "index.html": new TextEncoder().encode("<h1>from zip</h1>"),
+      "logo.svg": new TextEncoder().encode("<svg/>"),
+    });
+    link = await tool("create_upload", { archive: true, size: zip.length });
+    r = await put(link.body.upload_url, zip);
+    assert.equal(r.status, 200);
+    const fromZip = await tool("stage_project", {
+      name: "zip-test",
+      base_revision: null,
+      uploads: [link.body.upload_id],
+    });
+    assert.equal(fromZip.error, false);
+    assert.deepEqual(Object.keys(fromZip.body.files).sort(), [
+      "index.html",
+      "logo.svg",
+    ]);
+
+    link = await tool("create_upload", { path: "big.bin", size: 4 });
+    r = await put(link.body.upload_url, new Uint8Array(5));
+    assert.equal(r.status, 413, "bytes beyond the declared size are refused");
+    assert.equal(
+      (await tool("create_upload", { path: "x.bin", size: 11 * 1024 * 1024 }))
+        .error,
+      true,
+    );
+    assert.equal(
+      (
+        await tool("stage_project", {
+          name: "no-file",
+          base_revision: null,
+          file_path: "zwetschenkuchen.svg",
+        })
+      ).error,
+      true,
+      "file_path without an attached file is refused",
+    );
+    r = await mf.dispatchFetch(origin + "/upload/not-a-token", {
+      method: "PUT",
+      body: "x",
+    });
+    assert.equal(r.status, 401);
   } finally {
     await mf.dispose();
   }

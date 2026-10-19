@@ -28,6 +28,7 @@ import {
 } from "./types";
 import { readBounded } from "./files";
 import { handleMcp } from "./mcp";
+import { Uploads } from "./uploads";
 import { SCOPES, callbacks, loopbackForced, oauthHelpers } from "./oauth";
 import { callbackAllowed, loopbackCallback } from "./oauth-policy";
 import { escapeHtml as e, form, hidden, page } from "./ui";
@@ -40,6 +41,7 @@ export class Publisher extends DurableObject<Env> {
   private cloudflare: Cloudflare;
   private publications: Publications;
   private updates: Updates;
+  private uploads: Uploads;
   private queue: Promise<unknown> = Promise.resolve();
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -64,6 +66,7 @@ export class Publisher extends DurableObject<Env> {
     );
     this.publications = new Publications(this.projects, this.cloudflare);
     this.updates = new Updates(this.store, env, this.cloudflare);
+    this.uploads = new Uploads(this.store, env.PUBLISHER_ORIGIN);
   }
   private exclusive<T>(fn: () => Promise<T>): Promise<T> {
     const result = this.queue.then(fn);
@@ -146,6 +149,7 @@ export class Publisher extends DurableObject<Env> {
         for (const op of this.publications.pending())
           await this.publications.step(op.id);
       this.projects.collect();
+      this.uploads.collect();
       for (const [key, record] of this.store.list<{ expires: number }>(
         "download:",
       ))
@@ -256,8 +260,14 @@ export class Publisher extends DurableObject<Env> {
         env: this.env,
         schedule: () => this.schedule(),
         exportLink: (id, r) => this.exportLink(id, r),
+        uploads: this.uploads,
       });
     }
+    if (path.startsWith("/upload/") && request.method === "PUT")
+      return Response.json(
+        await this.uploads.receive(path.slice(8), request.body),
+        { headers: { "Cache-Control": "no-store" } },
+      );
     if (path.startsWith("/download/") && request.method === "GET") {
       const grant = this.store.get<{
         project: string;

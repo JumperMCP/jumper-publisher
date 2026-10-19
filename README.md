@@ -78,6 +78,7 @@ Your Publisher's control panel lists every site. From there you can unpublish (h
 
 - **Name already taken by a previous project:** ChatGPT asks you for another name.
 - **ChatGPT can't find your file:** Attach it again rather than letting it recreate the file from memory.
+- **Images, ZIPs and large files from Claude:** Needs Publisher 0.1.16 or later. Claude asks your Publisher for a one-time upload link and sends the file there from its code sandbox (claude.ai) or shell (Claude Code), so the file never passes through the chat. On claude.ai, code execution must be on and allowed to reach your Publisher's `workers.dev` address.
 - **Published but not loading yet:** Try again in a few minutes; the upload itself probably succeeded.
 - **Out of space:** You export and delete old sites. Live sites are never removed to make room.
 - **Publishing event claims token is missing:** Grab a "Worker Scripts" API token from Cloudflare, add it in your Publisher settings (step 3).
