@@ -1,4 +1,9 @@
-import { loopbackCallback, registrationAllowed } from "./oauth-policy";
+import {
+  callbacks,
+  loopbackCallback,
+  registrationAllowed,
+} from "./oauth-policy";
+export { callbacks };
 import {
   OAuthProvider,
   getOAuthApi,
@@ -6,35 +11,36 @@ import {
 } from "@cloudflare/workers-oauth-provider";
 import { requireThat, type Env } from "./types";
 export const SCOPES = ["projects:read", "projects:write"];
-export function callbacks(env: Env): string[] {
-  const parsed: unknown = JSON.parse(env.CHATGPT_CALLBACKS);
-  return Array.isArray(parsed)
-    ? parsed.filter(
-        (s): s is string => typeof s === "string" && s.startsWith("https://"),
-      )
-    : [];
-}
-// Off unless the owner sets ALLOW_LOOPBACK_CALLBACKS=true on the Publisher Worker.
-export function loopbackEnabled(env: Env) {
+// Local AI clients (e.g. Claude Code) sign in through http://localhost callbacks. Off until the owner turns it on
+// in the cockpit; ALLOW_LOOPBACK_CALLBACKS=true on the Worker forces it on (0.1.13 behavior).
+export function loopbackForced(env: Env) {
   return env.ALLOW_LOOPBACK_CALLBACKS === "true";
 }
+async function loopbackEnabled(env: Env) {
+  return (
+    loopbackForced(env) ||
+    (await env.PUBLISHER.get(
+      env.PUBLISHER.idFromName("installation"),
+    ).localSignInAllowed())
+  );
+}
 
-function registrationError(metadata: Record<string, unknown>, env: Env) {
-  if (registrationAllowed(metadata, callbacks(env), loopbackEnabled(env)))
-    return undefined;
+async function registrationError(metadata: Record<string, unknown>, env: Env) {
+  const loopback = await loopbackEnabled(env);
+  if (registrationAllowed(metadata, callbacks(env), loopback)) return undefined;
   const uris = metadata.redirect_uris;
   if (
-    !loopbackEnabled(env) &&
+    !loopback &&
     Array.isArray(uris) &&
     uris.some((uri) => typeof uri === "string" && loopbackCallback(uri))
   )
     return {
       description:
-        "Sign-in from programs on your own computer (localhost callbacks) is turned off. The Publisher owner can turn it on by setting ALLOW_LOOPBACK_CALLBACKS to true in the Publisher Worker's Cloudflare settings.",
+        "Sign-in from AI apps on your own computer (localhost callbacks), such as Claude Code, is turned off. The Publisher owner can turn it on in the Publisher control panel under AI connections.",
     };
   return {
     description:
-      "Only the verified ChatGPT callback, or localhost callbacks when enabled, with public-client PKCE are accepted.",
+      "Only the verified ChatGPT and Claude callbacks, or localhost callbacks when enabled, with public-client PKCE are accepted.",
   };
 }
 
@@ -58,7 +64,7 @@ function options(env: Env): OAuthProviderOptions<Env> {
       async fetch(request, bindings, ctx) {
         const context = ctx as typeof ctx & {
           props: { ownerEpoch?: string };
-          auth: { scope: string[] };
+          auth: { scope: string[]; clientId?: string };
         };
         requireThat(
           SCOPES.every((scope) => context.auth.scope.includes(scope)),
@@ -68,6 +74,7 @@ function options(env: Env): OAuthProviderOptions<Env> {
         );
         const headers = new Headers(request.headers);
         headers.set("X-Publisher-Owner-Epoch", context.props.ownerEpoch ?? "");
+        headers.set("X-Publisher-Client", context.auth.clientId ?? "");
         return bindings.PUBLISHER.get(
           bindings.PUBLISHER.idFromName("installation"),
         ).fetch(new Request(request, { headers }));
@@ -77,6 +84,7 @@ function options(env: Env): OAuthProviderOptions<Env> {
       async fetch(request, bindings) {
         const headers = new Headers(request.headers);
         headers.delete("X-Publisher-Owner-Epoch");
+        headers.delete("X-Publisher-Client");
         return bindings.PUBLISHER.get(
           bindings.PUBLISHER.idFromName("installation"),
         ).fetch(new Request(request, { headers }));

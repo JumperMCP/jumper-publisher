@@ -1,3 +1,23 @@
+import type { Env } from "./types";
+
+// Hosted AI clients every Publisher accepts, so an update fixes installs whose Worker variables predate a client.
+export const BUILT_IN_CALLBACKS = [
+  "https://chatgpt.com/connector_platform_oauth_redirect",
+  "https://claude.ai/api/mcp/auth_callback",
+];
+export function callbacks(env: Env): string[] {
+  // CHATGPT_CALLBACKS is the pre-0.1.14 name; updates inherit Worker variables, so older installs still carry it.
+  const parsed: unknown = JSON.parse(
+    env.ALLOWED_CALLBACKS ?? env.CHATGPT_CALLBACKS ?? "[]",
+  );
+  const extra = Array.isArray(parsed)
+    ? parsed.filter(
+        (s): s is string => typeof s === "string" && s.startsWith("https://"),
+      )
+    : [];
+  return [...new Set([...BUILT_IN_CALLBACKS, ...extra])];
+}
+
 // Native clients such as Claude Code listen on a random loopback port (RFC 8252 §7.3).
 const LOOPBACK_HOSTS = ["localhost", "127.0.0.1", "[::1]"];
 

@@ -24,12 +24,13 @@
     }
   ],
   "vars": {
-    "INSTALLER_ORIGIN": "https://chatgpt-to-public.jumpermcp.dev",
+    "INSTALLER_ORIGIN": "https://publisher.jumpermcp.dev",
+    "REDIRECT_ORIGINS": "[\"https://chatgpt-to-public.jumpermcp.dev\"]",
     "CLIENT_ID": "af114d63e7199023c165b59009ffb38d",
     "REQUIRED_SCOPES": "[\"account-settings.read\",\"workers-scripts.write\",\"workers-kv-storage.write\"]",
-    "RELEASE_BASE_URL": "https://chatgpt-to-public.jumpermcp.dev/releases/0.1.13/",
+    "RELEASE_BASE_URL": "https://publisher.jumpermcp.dev/releases/0.1.13/",
     "RELEASE_PUBLIC_KEY": "J8n5q/f3GMMG0dX27iwZxYx9K5+QLDbbRl/yQiwy/9M=",
-    "CHATGPT_CALLBACKS": "[\"https://chatgpt.com/connector_platform_oauth_redirect\"]",
+    "ALLOWED_CALLBACKS": "[]",
     "FILE_DOWNLOAD_HOSTS": "[]",
     "REFRESH_HANDOFF_VERIFIED": "false"
   },
@@ -42,6 +43,11 @@
   "routes": [
     {
       "pattern": "chatgpt-to-public.jumpermcp.dev",
+      "custom_domain": true,
+      "zone_name": "jumpermcp.dev"
+    },
+    {
+      "pattern": "publisher.jumpermcp.dev",
       "custom_domain": true,
       "zone_name": "jumpermcp.dev"
     }

@@ -28,7 +28,7 @@ import {
 } from "./types";
 import { readBounded } from "./files";
 import { handleMcp } from "./mcp";
-import { SCOPES, callbacks, loopbackEnabled, oauthHelpers } from "./oauth";
+import { SCOPES, callbacks, loopbackForced, oauthHelpers } from "./oauth";
 import { callbackAllowed, loopbackCallback } from "./oauth-policy";
 import { escapeHtml as e, form, hidden, page } from "./ui";
 
@@ -70,6 +70,29 @@ export class Publisher extends DurableObject<Env> {
     this.queue = result.catch(() => {});
     return result;
   }
+  // RPC for the edge OAuth provider's registration check; not reachable over HTTP.
+  localSignInAllowed() {
+    return (
+      loopbackForced(this.env) ||
+      this.store.get<boolean>("local-sign-in") === true
+    );
+  }
+  private async clients() {
+    const oauth = oauthHelpers(this.env),
+      { items } = await oauth.listUserGrants("owner", { limit: 100 });
+    return Promise.all(
+      items.map(async (grant) => {
+        const client = await oauth.lookupClient(grant.clientId);
+        return {
+          grant: grant.id,
+          name: client?.clientName || "Unnamed client",
+          callback: grant.redirectUri ?? client?.redirectUris[0] ?? "",
+          approved: grant.createdAt * 1000,
+          lastUsed: this.store.get<number>("client-used:" + grant.clientId),
+        };
+      }),
+    );
+  }
   async fetch(request: Request) {
     return this.exclusive(async () => {
       try {
@@ -88,7 +111,7 @@ export class Publisher extends DurableObject<Env> {
         const url = new URL(request.url);
         const consentRetry =
           url.pathname === "/authorize" && request.method === "GET"
-            ? `<p><a href="${e(url.pathname + url.search)}">Retry connecting to ChatGPT</a></p><p>If this continues, return to ChatGPT and start Connect again. Your Publisher password does not need to be reset.</p>`
+            ? `<p><a href="${e(url.pathname + url.search)}">Retry connecting your AI client</a></p><p>If this continues, return to your AI client (ChatGPT, Claude, …) and start Connect again. Your Publisher password does not need to be reset.</p>`
             : "";
         return request.headers.get("accept")?.includes("text/html")
           ? page(
@@ -201,6 +224,13 @@ export class Publisher extends DurableObject<Env> {
         "Reconnect to your Publisher.",
         401,
       );
+      const client = request.headers.get("X-Publisher-Client");
+      if (client) {
+        // Coarse last-use time for the AI connections list; avoids a write per tool call.
+        const key = "client-used:" + client,
+          last = this.store.get<number>(key) ?? 0;
+        if (Date.now() - last > 600000) this.store.put(key, Date.now());
+      }
       // Read and parse the bounded MCP body in the Durable Object, never at the edge.
       if (request.method === "POST") {
         const bytes = await readBounded(request.body, 1024 * 1024);
@@ -311,7 +341,7 @@ export class Publisher extends DurableObject<Env> {
           callbackAllowed(
             auth.redirectUri,
             callbacks(this.env),
-            loopbackEnabled(this.env),
+            this.localSignInAllowed(),
           ) &&
             auth.codeChallengeMethod === "S256" &&
             auth.codeChallenge &&
@@ -359,7 +389,7 @@ export class Publisher extends DurableObject<Env> {
         callbackAllowed(
           approved.request.redirectUri,
           callbacks(this.env),
-          loopbackEnabled(this.env),
+          this.localSignInAllowed(),
         ),
         "invalid_authorization",
         "Callback no longer allowed.",
@@ -392,6 +422,25 @@ export class Publisher extends DurableObject<Env> {
         this.updates.request(body.get("update") ?? "");
         await this.schedule();
         return this.redirect("/");
+      }
+      if (path === "/connections/local") {
+        this.store.put("local-sign-in", body.get("enabled") === "true");
+        return this.redirect("/#connections");
+      }
+      if (path === "/connections/revoke") {
+        const grant = body.get("grant") ?? "";
+        const oauth = oauthHelpers(this.env),
+          { items } = await oauth.listUserGrants("owner", { limit: 100 });
+        const match = items.find((g) => g.id === grant);
+        requireThat(
+          match,
+          "not_found",
+          "That connection no longer exists.",
+          404,
+        );
+        await oauth.revokeGrant(match.id, "owner");
+        this.store.delete("client-used:" + match.clientId);
+        return this.redirect("/#connections");
       }
       if (path === "/logout") {
         await this.auth.logout(request);
@@ -471,6 +520,9 @@ export class Publisher extends DurableObject<Env> {
           operations,
           connected: health.state === "connected",
           update,
+          clients: await this.clients(),
+          localSignIn: this.localSignInAllowed(),
+          localSignInForced: loopbackForced(this.env),
           receipt: {
             installation: this.env.INSTALLATION_ID,
             account: this.env.ACCOUNT_ID,

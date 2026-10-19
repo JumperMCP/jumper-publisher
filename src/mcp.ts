@@ -88,6 +88,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   function tool(
     name: string,
+    title: string,
     description: string,
     schema: z.ZodRawShape,
     readOnly: boolean,
@@ -99,9 +100,11 @@ export async function handleMcp(request: Request, services: ToolServices) {
     server.registerTool(
       name,
       {
+        title,
         description,
         inputSchema: schema,
         annotations: {
+          title,
           readOnlyHint: readOnly,
           destructiveHint: !readOnly && openWorld,
           idempotentHint: readOnly || idempotent,
@@ -134,6 +137,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   }
   tool(
     "list_projects",
+    "List projects",
     "Discover saved projects, names and stable public URLs.",
     {
       cursor: z.string().optional(),
@@ -145,6 +149,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "get_project",
+    "Get project",
     "Read the current manifest and paginated publication history.",
     {
       project: z.string(),
@@ -156,6 +161,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "read_files",
+    "Read file",
     "Read one text file with explicit character ranges. Use export for binary files.",
     {
       project: z.string(),
@@ -170,6 +176,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "search_files",
+    "Search files",
     "Search literal text in a retained revision, with explicit continuation.",
     {
       project: z.string(),
@@ -183,6 +190,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "stage_project",
+    "Stage project files",
     "Import approved static files into a private candidate. Unmentioned files remain unchanged.",
     stageWithFiles.shape,
     false,
@@ -195,6 +203,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "edit_file",
+    "Edit file",
     "Stage exact text replacements; every old_string must match uniquely. No partial edits on failure.",
     {
       project: z.string(),
@@ -208,6 +217,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "publish_project",
+    "Publish project",
     "Selected files will become PUBLIC. Publish a staged candidate, or supply changes with a request key. Warnings leave the candidate private for review.",
     {
       candidate: z.string().optional(),
@@ -259,6 +269,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "get_operation",
+    "Get publish status",
     "Inspect durable publication progress and sanitized provider errors.",
     { operation: z.string() },
     true,
@@ -271,6 +282,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "restore_revision",
+    "Restore revision",
     "Publish a retained snapshot at the same PUBLIC address; defaults to the previous snapshot.",
     {
       project: z.string(),
@@ -283,6 +295,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "export_project",
+    "Export project",
     "Create a short-lived download of the retained original files.",
     { project: z.string(), revision: z.string().optional() },
     true,
@@ -291,6 +304,7 @@ export async function handleMcp(request: Request, services: ToolServices) {
   );
   tool(
     "unpublish_project",
+    "Unpublish project",
     "Disable public serving while keeping files and history for later edits.",
     { project: z.string(), base_revision: z.string().nullable() },
     false,

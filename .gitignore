@@ -13,3 +13,6 @@ dist/
 coverage/
 __pycache__/
 marketing/linkedin-article-image/images/
+
+# local planning notes
+PRD-local/

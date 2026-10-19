@@ -1,6 +1,7 @@
 import type { Projects } from "./projects";
 import type { Operation } from "./types";
 import type { Update } from "./updates";
+import { loopbackCallback } from "./oauth-policy";
 import { cloudflareSettings } from "./owner-ui";
 import { escapeHtml as e, form, hidden } from "./ui";
 
@@ -14,6 +15,15 @@ export function dashboard(input: {
   connected: boolean;
   update?: Update;
   receipt: unknown;
+  clients: {
+    grant: string;
+    name: string;
+    callback: string;
+    approved: number;
+    lastUsed?: number;
+  }[];
+  localSignIn: boolean;
+  localSignInForced: boolean;
 }) {
   const {
     origin,
@@ -25,7 +35,29 @@ export function dashboard(input: {
     connected,
     update,
     receipt,
+    clients,
+    localSignIn,
+    localSignInForced,
   } = input;
+  const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  const clientRows = clients
+    .map((c) => {
+      const where = loopbackCallback(c.callback)
+        ? "an app on your computer (localhost)"
+        : URL.canParse(c.callback)
+          ? new URL(c.callback).hostname
+          : "unknown callback";
+      return `<article class="client-row"><div><strong>${e(c.name)}</strong><small>Returns to ${e(where)} · approved ${e(day(c.approved))}${c.lastUsed ? ` · last used ${e(day(c.lastUsed))}` : " · not used yet"}</small></div>${form("/connections/revoke", csrf, hidden("grant", c.grant) + `<button class="quiet-button" aria-label="Revoke access for ${e(c.name)}">Revoke</button>`)}</article>`;
+    })
+    .join("");
+  const localToggle = localSignInForced
+    ? '<p class="help">Sign-in from AI apps on your computer is on, set by the ALLOW_LOOPBACK_CALLBACKS Worker variable.</p>'
+    : form(
+        "/connections/local",
+        csrf,
+        hidden("enabled", localSignIn ? "false" : "true") +
+          `<p class="help">${localSignIn ? "On: AI apps on your computer, such as Claude Code, can ask to connect. Any program on this computer can open the approval page, so approve only sign-ins you just started." : "Off: AI apps on your computer, such as Claude Code, cannot connect. ChatGPT and Claude on the web are not affected."}</p><button class="quiet-button">${localSignIn ? "Turn off computer apps" : "Allow AI apps on this computer"}</button>`,
+      );
   const rows = projects.projects
     .map(
       (p) =>
@@ -38,9 +70,9 @@ export function dashboard(input: {
       return `<article class="operation"><div class="operation-head"><strong>${e(project?.name ?? op.kind)}</strong><span>${e(op.state)}</span></div><time datetime="${e(new Date(op.created).toISOString())}">${e(new Date(op.created).toISOString().replace("T", " ").slice(0, 16))} UTC · ${e(op.kind)}</time>${op.reachable === false ? "<p>Awaiting public address availability</p>" : ""}${op.error ? `<p>${e(op.error.message)}</p>` : ""}<details><summary>Operation details</summary><code>${e(op.id)}</code><p>Attempts: ${e(op.attempts)}</p></details></article>`;
     })
     .join("");
-  return `<div class="workspace"><section class="panel projects-panel"><div class="panel-heading"><h2>Public projects</h2><small>${projects.projects.length} projects · ${(projects.retained_bytes / 1024 / 1024).toFixed(2)} / 250 MiB</small></div><div class="panel-scroll" tabindex="0" role="region" aria-label="Projects">${rows || '<div class="empty"><strong>Your first site starts in a chat.</strong><p>Connect ChatGPT, choose the files you want to share, and ask Publisher to publish them here.</p></div>'}${projects.next_cursor ? '<p class="help">Showing the first 50 projects. Ask Publisher in ChatGPT to list more.</p>' : ""}</div></section>
-<section class="panel connect-panel" id="installation-receipt"><div class="panel-heading"><h2>ChatGPT connection</h2></div><div class="panel-scroll" tabindex="0" role="region" aria-label="ChatGPT connection and installation receipt"><p>Publish from a chat. Pick up from any session.</p><label for="mcp-url">MCP server URL</label><input id="mcp-url" readonly value="${e(origin)}/mcp"><p class="help">Use this URL from your Cloudflare installation receipt in ChatGPT → Plugins → Add custom MCP server.</p><details><summary>Installation receipt & connection help</summary><p>If the option is missing, check Settings → Security and login → Developer mode. Availability depends on your ChatGPT account and workspace.</p><pre>${e(JSON.stringify(receipt, null, 2))}</pre></details></div></section>
+  return `<div class="workspace"><section class="panel projects-panel"><div class="panel-heading"><h2>Public projects</h2><small>${projects.projects.length} projects · ${(projects.retained_bytes / 1024 / 1024).toFixed(2)} / 250 MiB</small></div><div class="panel-scroll" tabindex="0" role="region" aria-label="Projects">${rows || '<div class="empty"><strong>Your first site starts in a chat.</strong><p>Connect ChatGPT, Claude or another AI app, choose the files you want to share, and ask Publisher to publish them here.</p></div>'}${projects.next_cursor ? '<p class="help">Showing the first 50 projects. Ask Publisher in your AI app to list more.</p>' : ""}</div></section>
+<section class="panel connect-panel" id="connections"><div class="panel-heading"><h2>AI connections</h2></div><div class="panel-scroll" tabindex="0" role="region" aria-label="AI connections and installation receipt"><p>Start a site in one AI app, keep editing it in another.</p><label for="mcp-url">MCP server URL</label><input id="mcp-url" readonly value="${e(origin)}/mcp"><p class="help">Add this URL as a custom MCP server or connector: ChatGPT → Plugins → Add custom MCP server; Claude → Settings → Connectors → Add custom connector.</p><h3>Connected apps</h3>${clientRows || '<p class="help">No AI app is connected yet.</p>'}<details><summary>AI apps on this computer</summary>${localToggle}</details><details><summary>Installation receipt & connection help</summary><p>ChatGPT: if the option is missing, check Settings → Security and login → Developer mode. Availability depends on your account and workspace.</p><pre>${e(JSON.stringify(receipt, null, 2))}</pre></details></div></section>
 <section class="panel activity-panel"><div class="panel-heading"><h2>Recent operations</h2><a href="/" class="help">Refresh</a></div><div class="panel-scroll" tabindex="0" role="region" aria-label="Recent operations">${activity || "<p>No operations yet. Publication progress will appear here.</p>"}</div></section>
 ${cloudflareSettings(origin, account, csrf, connected)}
-<section class="panel updates-panel"><div class="panel-heading"><h2>Publisher updates</h2></div><div class="panel-scroll" tabindex="0" role="region" aria-label="Publisher updates"><p>Installed version: <strong>${e(version)}</strong></p><p>Installed from: <a href="https://chatgpt-to-public.jumpermcp.dev/" target="_blank" rel="noreferrer">jumpermcp.dev</a></p><p>Update state: ${e(update?.state ?? "No update checked")}.</p>${update?.error ? `<p role="alert">${e(update.error.message)}</p>` : ""}${form("/updates/check", csrf, "<button>Check for updates</button>")}${update?.state === "review" ? `<h3>Review ${e(update.release.manifest.version)}</h3><pre>${e(update.release.manifest.notes)}</pre>${update.release.manifest.version === version ? '<p role="status">You already have this version installed.</p>' : form("/updates/apply", csrf, hidden("update", update.id) + "<button>Update Publisher</button>")}` : ""}<details><summary>How updates work</summary><p>Publishing pauses between steps during an update and resumes afterward. Your projects stay in your Cloudflare account.</p></details></div></section></div><div class="inline-meta"><small>${e(new URL(origin).hostname)}</small><span class="status ${connected ? "live" : ""}">${connected ? "Website publishing connected" : "Connect Cloudflare in Settings"}</span></div>`;
+<section class="panel updates-panel"><div class="panel-heading"><h2>Publisher updates</h2></div><div class="panel-scroll" tabindex="0" role="region" aria-label="Publisher updates"><p>Installed version: <strong>${e(version)}</strong></p><p>Installed from: <a href="https://publisher.jumpermcp.dev/" target="_blank" rel="noreferrer">jumpermcp.dev</a></p><p>Update state: ${e(update?.state ?? "No update checked")}.</p>${update?.error ? `<p role="alert">${e(update.error.message)}</p>` : ""}${form("/updates/check", csrf, "<button>Check for updates</button>")}${update?.state === "review" ? `<h3>Review ${e(update.release.manifest.version)}</h3><pre>${e(update.release.manifest.notes)}</pre>${update.release.manifest.version === version ? '<p role="status">You already have this version installed.</p>' : form("/updates/apply", csrf, hidden("update", update.id) + "<button>Update Publisher</button>")}` : ""}<details><summary>How updates work</summary><p>Publishing pauses between steps during an update and resumes afterward. Your projects stay in your Cloudflare account.</p></details></div></section></div><div class="inline-meta"><small>${e(new URL(origin).hostname)}</small><span class="status ${connected ? "live" : ""}">${connected ? "Website publishing connected" : "Connect Cloudflare in Settings"}</span></div>`;
 }

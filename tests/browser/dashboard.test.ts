@@ -52,6 +52,23 @@ test("Publisher cockpit fits desktop, scrolls long lists, and preserves owner fo
             }
           : undefined,
     })),
+    clients: [
+      {
+        grant: "grant-1",
+        name: "ChatGPT",
+        callback: "https://chatgpt.com/connector_platform_oauth_redirect",
+        approved: 1791234000000,
+        lastUsed: 1791334000000,
+      },
+      {
+        grant: "grant-2",
+        name: "Claude Code",
+        callback: "http://localhost:53682/callback",
+        approved: 1791234000000,
+      },
+    ],
+    localSignIn: true,
+    localSignInForced: false,
     receipt: {
       publisher: "https://publisher-c047d890.example.workers.dev",
       mcp: "https://publisher-c047d890.example.workers.dev/mcp",
@@ -238,7 +255,7 @@ test("Publisher cockpit fits desktop, scrolls long lists, and preserves owner fo
       await tab
         .getByRole("link", { name: "jumpermcp.dev", exact: true })
         .getAttribute("href"),
-      "https://chatgpt-to-public.jumpermcp.dev/",
+      "https://publisher.jumpermcp.dev/",
     );
     await tab.goto(`http://127.0.0.1:${address.port}/available`);
     assert.equal(

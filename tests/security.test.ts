@@ -9,8 +9,12 @@ import {
   getCookie,
   sessionCookie,
 } from "../src/security";
-import { registrationAllowed } from "../src/oauth-policy";
-import { sha256 } from "../src/types";
+import {
+  BUILT_IN_CALLBACKS,
+  callbacks,
+  registrationAllowed,
+} from "../src/oauth-policy";
+import { sha256, type Env } from "../src/types";
 import { TestStore } from "./helpers";
 test("single-use setup, recovery, login throttling and epoch invalidation", async () => {
   const store = new TestStore(),
@@ -214,5 +218,30 @@ test("Cloudflare scopes are validated before provisioning and refresh rejects re
   await assert.rejects(
     exchangeCloudflare(new URLSearchParams(), ["write"], undefined, revoked),
     /Reconnect/,
+  );
+});
+test("callbacks: built-in ChatGPT and Claude, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
+  const env = (vars: Record<string, string>) => vars as unknown as Env;
+  assert.deepEqual(callbacks(env({})), BUILT_IN_CALLBACKS);
+  assert.ok(
+    callbacks(env({})).includes("https://claude.ai/api/mcp/auth_callback"),
+  );
+  assert.ok(
+    callbacks(
+      env({ CHATGPT_CALLBACKS: '["https://legacy.example/cb"]' }),
+    ).includes("https://legacy.example/cb"),
+  );
+  const both = callbacks(
+    env({
+      ALLOWED_CALLBACKS: '["https://new.example/cb"]',
+      CHATGPT_CALLBACKS: '["https://legacy.example/cb"]',
+    }),
+  );
+  assert.ok(both.includes("https://new.example/cb"));
+  assert.ok(!both.includes("https://legacy.example/cb"));
+  assert.ok(
+    !callbacks(
+      env({ ALLOWED_CALLBACKS: '["http://plain.example/cb"]' }),
+    ).includes("http://plain.example/cb"),
   );
 });

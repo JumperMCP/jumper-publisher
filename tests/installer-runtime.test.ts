@@ -30,6 +30,7 @@ async function fixture(
       },
       bindings: {
         INSTALLER_ORIGIN: origin,
+        REDIRECT_ORIGINS: '["https://old-installer.test"]',
         INSTALLER_KEY: key,
         CLIENT_ID: "test-client",
         REQUIRED_SCOPES: '["account-settings.read"]',
@@ -267,5 +268,22 @@ test("preflight verifies hosted release assets without fetching its own public d
     } finally {
       await mf.dispose();
     }
+  }
+});
+
+test("earlier installer hosts redirect to the current origin; unknown hosts are refused", async () => {
+  const { mf } = await fixture();
+  try {
+    let r = await mf.dispatchFetch("https://old-installer.test/start?x=1", {
+      redirect: "manual",
+    });
+    assert.equal(r.status, 308);
+    assert.equal(r.headers.get("Location"), origin + "/start?x=1");
+    r = await mf.dispatchFetch("https://elsewhere.test/", {
+      redirect: "manual",
+    });
+    assert.equal(r.status, 400);
+  } finally {
+    await mf.dispose();
   }
 });

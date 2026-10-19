@@ -41,7 +41,7 @@ No GitHub, terminal, build step, or OpenAI API key needed.
 
 - Cloudflare account, *free or paid*. The Publisher plugin creates Workers and KVs there on your behalf.
 - ChatGPT account, *free or paid*. Free accounts first enable "developer mode" (Settings → Security & login).
-- Or an AI client on your computer, such as Claude Code: from 0.1.13, after you turn on `ALLOW_LOOPBACK_CALLBACKS` (see Troubleshooting). claude.ai web connectors are not supported yet.
+- Or Claude (web, Desktop, mobile) from 0.1.14, or an AI app on your computer such as Claude Code once you allow it in the cockpit (see Troubleshooting).
 
 ## How to install (once)
 
@@ -81,7 +81,8 @@ Your Publisher's control panel lists every site. From there you can unpublish (h
 - **Published but not loading yet:** Try again in a few minutes; the upload itself probably succeeded.
 - **Out of space:** You export and delete old sites. Live sites are never removed to make room.
 - **Publishing event claims token is missing:** Grab a "Worker Scripts" API token from Cloudflare, add it in your Publisher settings (step 3).
-- **Using Claude Code or another local AI client:** Needs Publisher 0.1.13 or later. In Cloudflare, open your `publisher-…` Worker → Settings → Variables and Secrets and add the text variable `ALLOW_LOOPBACK_CALLBACKS` = `true`. Then add the MCP URL in your client (Claude Code: `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in). With this on, any program on your computer can ask for access, so approve only sign-ins you just started yourself. claude.ai web connectors are rejected at sign-in for now.
+- **Using Claude:** Needs Publisher 0.1.14 or later. In Claude, open Settings → Connectors → Add custom connector and paste the MCP URL from your Publisher's **AI connections** panel.
+- **Using Claude Code or another AI app on your computer:** Needs Publisher 0.1.14 or later. In your Publisher's **AI connections** panel, open *AI apps on this computer* and allow them. Then add the MCP URL (Claude Code: `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in). With this on, any program on your computer can ask for access, so approve only sign-ins you just started yourself. Revoke an app any time in the same panel.
 - Also see: [recovery and uninstall](docs/recovery.md).
 
 ---

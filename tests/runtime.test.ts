@@ -116,7 +116,19 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
       }),
     });
     assert.equal(r.status, 400);
-    assert.match(await r.text(), /ALLOW_LOOPBACK_CALLBACKS/);
+    assert.match(await r.text(), /AI connections/);
+    r = await call("/oauth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_name: "Claude",
+        redirect_uris: ["https://claude.ai/api/mcp/auth_callback"],
+        token_endpoint_auth_method: "none",
+        grant_types: ["authorization_code", "refresh_token"],
+        response_types: ["code"],
+      }),
+    });
+    assert.equal(r.status, 201);
     r = await call("/oauth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -212,7 +224,7 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
     assert.equal(r.status, 400);
     const connectionError = await r.text();
     assert.match(connectionError, /Invalid client_id/);
-    assert.match(connectionError, /Retry connecting to ChatGPT/);
+    assert.match(connectionError, /Retry connecting your AI client/);
     assert.doesNotMatch(connectionError, /The operation could not complete/);
     r = await call("/authorize?" + authQuery, { headers: { Cookie: cookie } });
     assert.equal(r.status, 200);
@@ -261,6 +273,12 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
     }
     const tools = await mcp("tools/list");
     assert.equal(tools.result.tools.length, 11);
+    for (const t of tools.result.tools) {
+      assert.ok(t.title, t.name + " needs a title");
+      assert.equal(typeof t.annotations.readOnlyHint, "boolean");
+      if (!t.annotations.readOnlyHint)
+        assert.equal(typeof t.annotations.destructiveHint, "boolean");
+    }
     const staged = await mcp("tools/call", {
       name: "stage_project",
       arguments: {
@@ -392,6 +410,122 @@ test("loopback callbacks: opt-in registration, consent warning and code exchange
       }),
     });
     assert.equal(r.status, 200);
+  } finally {
+    await mf.dispose();
+  }
+});
+test("AI connections: owner turns on local sign-in, sees the client, and revokes it", async () => {
+  const mf = await start(),
+    callback = "http://localhost:53682/callback";
+  try {
+    const call = (
+      path: string,
+      init: NonNullable<Parameters<Miniflare["dispatchFetch"]>[1]> = {},
+    ) => mf.dispatchFetch(origin + path, { ...init, redirect: "manual" });
+    const post = (
+      path: string,
+      cookie: string,
+      fields: Record<string, string>,
+    ) =>
+      call(path, {
+        method: "POST",
+        headers: {
+          Origin: origin,
+          Cookie: cookie,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(fields),
+      });
+    let r = await post("/setup", "", {
+      token: "setup-token",
+      password: "a secure owner password",
+    });
+    const cookie = r.headers.get("set-cookie")!.split(";")[0];
+    r = await call("/", { headers: { Cookie: cookie } });
+    let html = await r.text();
+    const csrf = html.match(/name="csrf" value="([^"]+)"/)![1];
+    assert.match(html, /AI connections/);
+    assert.match(html, /No AI app is connected yet/);
+    const register = () =>
+      call("/oauth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_name: "Claude Code",
+          redirect_uris: [callback],
+          token_endpoint_auth_method: "none",
+          grant_types: ["authorization_code", "refresh_token"],
+          response_types: ["code"],
+        }),
+      });
+    assert.equal((await register()).status, 400);
+    r = await post("/connections/local", cookie, { csrf, enabled: "true" });
+    assert.equal(r.status, 303);
+    r = await register();
+    assert.equal(r.status, 201);
+    const client = (await r.json()) as { client_id: string },
+      verifier = "c".repeat(43);
+    r = await call(
+      "/authorize?" +
+        new URLSearchParams({
+          client_id: client.client_id,
+          redirect_uri: callback,
+          response_type: "code",
+          resource: origin + "/mcp",
+          scope: "projects:read projects:write",
+          state: "s",
+          code_challenge: await challengeFor(verifier),
+          code_challenge_method: "S256",
+        }),
+      { headers: { Cookie: cookie } },
+    );
+    const handle = (await r.text()).match(/name="handle" value="([^"]+)"/)![1],
+      consentCookie = r.headers.get("set-cookie")!.split(";")[0];
+    r = await post("/authorize", cookie + "; " + consentCookie, {
+      csrf,
+      handle,
+      decision: "approve",
+    });
+    const code = new URL(r.headers.get("Location")!).searchParams.get("code")!;
+    r = await call("/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: client.client_id,
+        code,
+        code_verifier: verifier,
+        redirect_uri: callback,
+        resource: origin + "/mcp",
+      }),
+    });
+    const { access_token } = (await r.json()) as { access_token: string };
+    const tools = () =>
+      call("/mcp", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + access_token,
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+        },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+      });
+    assert.equal((await tools()).status, 200);
+    r = await call("/", { headers: { Cookie: cookie } });
+    html = await r.text();
+    assert.match(html, /Claude Code/);
+    assert.match(html, /an app on your computer \(localhost\)/);
+    assert.match(html, /last used/);
+    const grant = html.match(
+      /action="\/connections\/revoke"><input type="hidden" name="csrf" value="[^"]+"><input type="hidden" name="grant" value="([^"]+)"/,
+    )![1];
+    r = await post("/connections/revoke", cookie, { csrf, grant });
+    assert.equal(r.status, 303);
+    assert.equal((await tools()).status, 401);
+    r = await call("/", { headers: { Cookie: cookie } });
+    assert.match(await r.text(), /No AI app is connected yet/);
+    r = await post("/connections/local", cookie, { csrf, enabled: "false" });
+    assert.equal((await register()).status, 400);
   } finally {
     await mf.dispose();
   }

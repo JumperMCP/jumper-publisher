@@ -73,7 +73,7 @@ Set these installer values:
 | `INSTALLER_KEY` (secret) | Random 32-byte key encoded as 64 hex characters, for temporary grant encryption |
 | `RELEASE_BASE_URL` | Pinned, numbered release directory |
 | `RELEASE_PUBLIC_KEY` | Independently distributed Ed25519 trust root |
-| `CHATGPT_CALLBACKS` | Exact HTTPS redirect URLs observed in the ChatGPT connection experiment; initially `[]` |
+| `ALLOWED_CALLBACKS` | Extra exact HTTPS redirect URLs, added to the built-in ChatGPT and Claude callbacks; normally `[]`. Pre-0.1.14 name: `CHATGPT_CALLBACKS` (still read) |
 | `FILE_DOWNLOAD_HOSTS` | Exact approved HTTPS artifact hosts observed in the file experiment; initially `[]` |
 | `REFRESH_HANDOFF_VERIFIED` | Leave `false` until the independent refresh/rotation experiment passes |
 

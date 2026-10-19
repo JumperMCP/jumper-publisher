@@ -112,13 +112,14 @@ export interface Store {
   deleteChunks(hash: string): void;
 }
 export interface Env {
-  PUBLISHER: DurableObjectNamespace;
+  PUBLISHER: DurableObjectNamespace<import("./publisher").Publisher>;
   OAUTH_KV: KVNamespace;
   PUBLISHER_ORIGIN: string;
   ACCOUNT_ID: string;
   ACCOUNT_SUBDOMAIN: string;
   INSTALLATION_ID: string;
-  CHATGPT_CALLBACKS: string;
+  ALLOWED_CALLBACKS?: string;
+  CHATGPT_CALLBACKS?: string;
   ALLOW_LOOPBACK_CALLBACKS?: string;
   FILE_DOWNLOAD_HOSTS: string;
   RELEASE_VERSION: string;

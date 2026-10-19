@@ -23,12 +23,13 @@ interface InstallerEnv {
   INSTALLATIONS: DurableObjectNamespace;
   ASSETS: Fetcher;
   INSTALLER_ORIGIN: string;
+  REDIRECT_ORIGINS?: string;
   CLIENT_ID: string;
   REQUIRED_SCOPES: string;
   INSTALLER_KEY: string;
   RELEASE_BASE_URL: string;
   RELEASE_PUBLIC_KEY: string;
-  CHATGPT_CALLBACKS: string;
+  ALLOWED_CALLBACKS: string;
   FILE_DOWNLOAD_HOSTS: string;
   REFRESH_HANDOFF_VERIFIED: string;
 }
@@ -65,8 +66,17 @@ const cookieName = "__Host-installation";
 export default {
   async fetch(request: Request, env: InstallerEnv) {
     const url = new URL(request.url);
-    if (url.origin !== env.INSTALLER_ORIGIN)
+    if (url.origin !== env.INSTALLER_ORIGIN) {
+      // Earlier installer hosts forward to the current one so published links keep working.
+      // Release files never reach this code: static assets are served first, on every host.
+      const earlier: unknown = JSON.parse(env.REDIRECT_ORIGINS ?? "[]");
+      if (Array.isArray(earlier) && earlier.includes(url.origin))
+        return Response.redirect(
+          env.INSTALLER_ORIGIN + url.pathname + url.search,
+          308,
+        );
       return new Response("Unexpected host", { status: 400 });
+    }
     const cookies = (request.headers.get("Cookie") ?? "")
       .split(";")
       .map((c) => c.trim())
@@ -479,7 +489,7 @@ export class Installation extends DurableObject<InstallerEnv> {
               ACCOUNT_ID: state.account!,
               ACCOUNT_SUBDOMAIN: state.subdomain!,
               INSTALLATION_ID: state.id,
-              CHATGPT_CALLBACKS: this.env.CHATGPT_CALLBACKS,
+              ALLOWED_CALLBACKS: this.env.ALLOWED_CALLBACKS,
               FILE_DOWNLOAD_HOSTS: this.env.FILE_DOWNLOAD_HOSTS,
               RELEASE_VERSION: state.version!,
               CF_OAUTH_CLIENT_ID: this.env.CLIENT_ID,
