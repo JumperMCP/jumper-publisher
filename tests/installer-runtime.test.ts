@@ -50,12 +50,16 @@ async function fixture(
   const stub = namespace.get(namespace.idFromName(sessionId)) as unknown as {
     seed(value: unknown): Promise<void>;
     advance(): Promise<void>;
-    snapshot(): Promise<{
-      step: string;
-      error?: string;
-      credential?: unknown;
-      expires: number;
-    }>;
+    snapshot(): Promise<
+      | {
+          step: string;
+          error?: string;
+          credential?: unknown;
+          accounts?: unknown;
+          expires: number;
+        }
+      | undefined
+    >;
   };
   const call = (path = "/", method = "GET", body?: URLSearchParams) =>
     mf.dispatchFetch(origin + path, {
@@ -90,10 +94,30 @@ test("expired installation offers a CSRF-protected restart without clearing cook
         .status,
       303,
     );
-    const reset = await stub.snapshot();
+    const reset = (await stub.snapshot())!;
     assert.equal(reset.step, "authorize");
     assert.equal(reset.credential, undefined);
     assert.ok(reset.expires > Date.now());
+    assert.match(await (await call()).text(), /Install on my Cloudflare/);
+  } finally {
+    await mf.dispose();
+  }
+});
+
+test("expiry erases the whole installation record", async () => {
+  const { mf, stub, call } = await fixture();
+  try {
+    await stub.seed({
+      id: "done",
+      csrf: "csrf",
+      step: "complete",
+      account: "test-account",
+      subdomain: "owner",
+      worker: "publisher-done",
+      expires: Date.now() - 1000,
+    });
+    await stub.advance();
+    assert.equal(await stub.snapshot(), undefined);
     assert.match(await (await call()).text(), /Install on my Cloudflare/);
   } finally {
     await mf.dispose();
@@ -184,12 +208,12 @@ test("fresh authorization resets the window instead of inheriting idle-page expi
         .status,
       303,
     );
-    assert.ok((await stub.snapshot()).expires > Date.now() + 3500000);
+    assert.ok((await stub.snapshot())!.expires > Date.now() + 3500000);
     assert.equal(
       (await call("/callback?state=state&code=test-only")).status,
       303,
     );
-    const state = await stub.snapshot();
+    const state = (await stub.snapshot())!;
     assert.equal(state.step, "account");
     assert.ok(state.expires > Date.now() + 3500000);
     assert.equal(
@@ -201,6 +225,11 @@ test("fresh authorization resets the window instead of inheriting idle-page expi
         )
       ).status,
       303,
+    );
+    assert.equal(
+      (await stub.snapshot())!.accounts,
+      undefined,
+      "account names are dropped once one is chosen",
     );
     let html = "";
     const deadline = Date.now() + 5000;
@@ -257,7 +286,7 @@ test("preflight verifies hosted release assets without fetching its own public d
         ),
       });
       await stub.advance();
-      const state = await stub.snapshot();
+      const state = (await stub.snapshot())!;
       assert.equal(publicCalls, 1);
       assert.deepEqual(assetPaths, [
         "/releases/0.1.1/release.json",

@@ -58,8 +58,7 @@ interface Install {
     | "storage"
     | "publisher"
     | "handoff"
-    | "complete"
-    | "expired";
+    | "complete";
   error?: string;
 }
 const cookieName = "__Host-installation";
@@ -129,7 +128,7 @@ export class Installation extends DurableObject<InstallerEnv> {
     });
   }
   private render(state: Install) {
-    if (state.expires <= Date.now() || state.step === "expired")
+    if (state.expires <= Date.now())
       return installationError(
         "Your installation session timed out. Start a new installation to reconnect Cloudflare.",
         410,
@@ -349,6 +348,7 @@ export class Installation extends DurableObject<InstallerEnv> {
           "Select an authorized account.",
         );
         state.account = body.get("account")!;
+        delete state.accounts;
         state.worker = "publisher-" + state.id.slice(0, 8);
         state.step = "preflight";
         await this.ctx.storage.put("install", state);
@@ -376,14 +376,10 @@ export class Installation extends DurableObject<InstallerEnv> {
   }
   async alarm() {
     return this.exclusive(async () => {
-      const state = await this.state();
-      if (Date.now() >= state.expires) {
-        delete state.credential;
-        delete state.key;
-        delete state.handoff;
-        delete state.setup;
-        state.step = "expired";
-        await this.ctx.storage.put("install", state);
+      const state = await this.ctx.storage.get<Install>("install");
+      // Nothing outlives the installation window: erase the whole record.
+      if (!state || Date.now() >= state.expires) {
+        await this.ctx.storage.deleteAll();
         return;
       }
       try {
@@ -604,8 +600,7 @@ export class Installation extends DurableObject<InstallerEnv> {
       }
       await this.ctx.storage.put("install", state);
       await this.ctx.storage.setAlarm(
-        state.error ||
-          ["authorize", "account", "complete", "expired"].includes(state.step)
+        state.error || ["authorize", "account", "complete"].includes(state.step)
           ? state.expires
           : Date.now() + 1000,
       );
