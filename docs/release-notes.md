@@ -1,3 +1,7 @@
+# 0.1.19 — Tweak cockpit wording
+
+- Better wording in Publisher cockpit
+
 # 0.1.18 — change your owner password
 
 - **Change owner password.** In **Cloudflare settings → Change owner password**, enter your current password and a new one (12–256 characters). Wrong current passwords count toward the same limit as sign-in: 10 tries per 15 minutes.
