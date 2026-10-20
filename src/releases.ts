@@ -13,6 +13,37 @@ export interface SignedRelease {
   manifest: ReleaseManifest;
   signature: string;
 }
+const VERSION = /^\d+\.\d+\.\d+$/;
+export function compareVersions(a: string, b: string) {
+  const pa = a.split(".").map(Number),
+    pb = b.split(".").map(Number);
+  for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] - pb[i];
+  return 0;
+}
+// A numbered release folder (…/releases/0.1.12/) is a pin the owner chose, so it may go
+// back for recovery. The release channel (…/releases/) only moves forward: a host that
+// serves an older signed release there cannot roll an installation back.
+export function pinnedRelease(base: string) {
+  return /\/\d+\.\d+\.\d+\/?$/.test(new URL(base).pathname);
+}
+export function requireNoDowngrade(
+  base: string,
+  installed: string,
+  offered: string,
+) {
+  requireThat(
+    VERSION.test(offered),
+    "invalid_release",
+    "The release version is not valid.",
+  );
+  requireThat(
+    pinnedRelease(base) ||
+      !VERSION.test(installed) ||
+      compareVersions(offered, installed) >= 0,
+    "downgrade_refused",
+    `The release channel offers ${offered}, which is older than the installed ${installed}. Publisher does not install older versions from the channel.`,
+  );
+}
 export async function verifyRelease(
   release: SignedRelease,
   modules: Map<string, Uint8Array>,

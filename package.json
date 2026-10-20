@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-to-public-page",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -10,6 +10,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "build": "wrangler deploy --dry-run --outdir dist",
     "release": "node --import tsx scripts/release.ts",
+    "publish-release": "node --import tsx scripts/publish-release.ts",
     "format": "prettier --write src tests scripts",
     "format:check": "prettier --check src tests scripts",
     "build:installer": "wrangler deploy --config wrangler.installer.jsonc --dry-run --outdir dist/installer",

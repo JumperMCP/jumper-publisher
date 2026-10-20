@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  compareVersions,
+  pinnedRelease,
+  requireNoDowngrade,
   verifyRelease,
   updateMetadata,
   type ReleaseManifest,
@@ -86,4 +89,21 @@ test("signed releases reject damaged modules, wrong trust roots and incompatible
       updateMetadata(manifest, { migration_tag: "v2", bindings: [] }, "update"),
     /tags differ/,
   );
+});
+test("the release channel never goes back; a pinned release folder may", () => {
+  assert.ok(compareVersions("0.1.10", "0.1.9") > 0);
+  assert.equal(compareVersions("0.1.16", "0.1.16"), 0);
+  const channel = "https://publisher.example/releases/",
+    pinned = "https://publisher.example/releases/0.1.12/";
+  assert.equal(pinnedRelease(channel), false);
+  assert.equal(pinnedRelease(pinned), true);
+  requireNoDowngrade(channel, "0.1.16", "0.1.17");
+  requireNoDowngrade(channel, "0.1.16", "0.1.16");
+  assert.throws(() => requireNoDowngrade(channel, "0.1.16", "0.1.9"), {
+    code: "downgrade_refused",
+  });
+  requireNoDowngrade(pinned, "0.1.16", "0.1.12");
+  assert.throws(() => requireNoDowngrade(channel, "0.1.16", "1.0"), {
+    code: "invalid_release",
+  });
 });

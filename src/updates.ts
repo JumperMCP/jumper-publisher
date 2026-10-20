@@ -1,6 +1,11 @@
 import { Cloudflare } from "./cloudflare";
 import { downloadRelease } from "./release-download";
-import { updateMetadata, verifyRelease, type SignedRelease } from "./releases";
+import {
+  requireNoDowngrade,
+  updateMetadata,
+  verifyRelease,
+  type SignedRelease,
+} from "./releases";
 import {
   LIMITS,
   publicError,
@@ -40,6 +45,11 @@ export class Updates {
     const { signed, modules } = await downloadRelease(
       this.env.RELEASE_BASE_URL,
       this.env.RELEASE_PUBLIC_KEY,
+    );
+    requireNoDowngrade(
+      this.env.RELEASE_BASE_URL,
+      this.env.RELEASE_VERSION,
+      signed.manifest.version,
     );
     const next: Update = {
       id: crypto.randomUUID(),

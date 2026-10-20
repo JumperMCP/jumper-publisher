@@ -1,11 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
-import { verifyRelease, type SignedRelease } from "../src/releases";
+import {
+  compareVersions,
+  verifyRelease,
+  type SignedRelease,
+} from "../src/releases";
 
 test("archived public releases retain valid signatures and matching checksums", async () => {
   const config = JSON.parse(await readFile("wrangler.installer.jsonc", "utf8"));
-  const versions = await readdir("public/releases");
+  const versions = (await readdir("public/releases")).filter((name) =>
+    /^\d+\.\d+\.\d+$/.test(name),
+  );
   assert.ok(versions.includes("0.1.0"));
   for (const version of versions) {
     const directory = `public/releases/${version}`;
@@ -24,4 +30,21 @@ test("archived public releases retain valid signatures and matching checksums", 
       `${manifest.modules[0].sha256}  worker.js\n`,
     );
   }
+});
+test("the release channel serves the newest archived release and the installer follows it", async () => {
+  const config = JSON.parse(await readFile("wrangler.installer.jsonc", "utf8"));
+  assert.equal(
+    config.vars.RELEASE_BASE_URL,
+    config.vars.INSTALLER_ORIGIN + "/releases/",
+  );
+  const newest = (await readdir("public/releases"))
+    .filter((name) => /^\d+\.\d+\.\d+$/.test(name))
+    .sort(compareVersions)
+    .at(-1)!;
+  for (const file of ["release.json", "worker.js", "SHA256SUMS"])
+    assert.deepEqual(
+      await readFile(`public/releases/${file}`),
+      await readFile(`public/releases/${newest}/${file}`),
+      file,
+    );
 });

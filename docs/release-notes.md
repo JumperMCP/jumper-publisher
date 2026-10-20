@@ -1,3 +1,10 @@
+# 0.1.17 — release channel with rollback protection
+
+- **Updates without editing Cloudflare settings.** Publishers now follow the release channel `https://publisher.jumpermcp.dev/releases/`, which always serves the newest signed release. **Check for updates** offers each new release; you still review and approve every update. New installations use the channel automatically. To switch an existing installation once, set the Worker variable `RELEASE_BASE_URL` to `https://publisher.jumpermcp.dev/releases/`.
+- **No rollbacks from the channel.** The Publisher refuses a channel release older than the one installed. A release host that was taken over can then only withhold updates, not push an old version back. Signatures are checked as before. Pointing `RELEASE_BASE_URL` at a numbered release folder still pins that version on purpose, for recovery.
+
+No migration, credential, or origin changes.
+
 # 0.1.16 — upload links for images, ZIPs and large files
 
 - **New tool `create_upload`.** An AI app with a shell or code sandbox, such as Claude Code or Claude with code execution, asks for a one-time upload link and sends the file's bytes there directly (`curl -X PUT --data-binary @FILE …`). It then passes the returned `upload_id` in `uploads` to `stage_project` or `publish_project`. Images, ZIPs and big text files no longer have to pass through the chat, which made them impossible before.
