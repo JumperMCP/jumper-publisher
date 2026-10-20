@@ -1,0 +1,27 @@
+{
+  "name": "jumper-publisher",
+  "displayName": "Jumper Publisher",
+  "version": "0.1.0",
+  "description": "Publish websites from Claude to your own Cloudflare account, then edit, undo, export or unpublish them from any later chat.",
+  "author": {
+    "name": "Jumper MCP",
+    "email": "support@jumpermcp.com",
+    "url": "https://jumpermcp.dev"
+  },
+  "homepage": "https://jumpermcp.dev/publisher/",
+  "repository": "https://github.com/JumperMCP/jumper-publisher",
+  "license": "MIT",
+  "keywords": ["website", "publishing", "cloudflare", "static-site", "hosting"],
+  "icon": "./icon.png",
+  "documentationUrl": "https://jumpermcp.dev/publisher/docs/",
+  "supportUrl": "https://github.com/JumperMCP/jumper-publisher/issues",
+  "privacyPolicyUrl": "https://jumpermcp.dev/publisher/privacy/",
+  "userConfig": {
+    "publisher_url": {
+      "type": "string",
+      "title": "Publisher MCP URL",
+      "description": "The MCP URL of your own Publisher, from its control panel under AI connections. It ends in /mcp, for example https://publisher-1a2b3c4d.your-name.workers.dev/mcp. Install a Publisher first at https://publisher.jumpermcp.dev.",
+      "required": true
+    }
+  }
+}

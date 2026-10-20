@@ -1,0 +1,15 @@
+{
+  "name": "jumper-mcp",
+  "description": "Plugins by Jumper MCP.",
+  "owner": {
+    "name": "Jumper MCP",
+    "email": "support@jumpermcp.com"
+  },
+  "plugins": [
+    {
+      "name": "jumper-publisher",
+      "source": "./plugin",
+      "description": "Publish websites from Claude to your own Cloudflare account, then edit, undo, export or unpublish them from any later chat."
+    }
+  ]
+}

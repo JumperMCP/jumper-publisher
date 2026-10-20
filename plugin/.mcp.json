@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "publisher": {
+      "type": "http",
+      "url": "${user_config.publisher_url}"
+    }
+  }
+}
