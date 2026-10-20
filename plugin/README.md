@@ -13,6 +13,7 @@ Ask Claude to build a web page and publish it, and get a public address back in 
 
 1. Install your own Publisher once at [publisher.jumpermcp.dev](https://publisher.jumpermcp.dev) (about 5 minutes): sign in to Cloudflare, choose an account, create your Publisher password, and add a Cloudflare API token with **Workers Scripts: Edit** permission in your Publisher's settings.
 2. Copy the **MCP URL** from your Publisher's control panel under **AI connections**. It ends in `/mcp`.
+   In the same panel, under **AI apps on this computer**, choose **Allow AI apps on this computer**: Claude Code signs in through your computer, which is off by default. Approve only sign-ins you just started.
 3. Install the plugin in Claude Code:
 
    ```

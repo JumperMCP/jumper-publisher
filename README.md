@@ -43,12 +43,13 @@ No GitHub, terminal, build step, or AI provider API key needed.
 - Cloudflare account, *free or paid*. The Publisher plugin creates Workers and KVs there on your behalf.
 - ChatGPT account, *free or paid*. Free accounts first enable "developer mode" (Settings → Security & login).
 - Or a Claude account (web, Desktop, mobile, Claude Code). See [Using Publisher with Claude](#using-publisher-with-claude).
+- Or Codex. See [Using Publisher with Codex](#using-publisher-with-codex).
 
 ## How to install (once)
 
 1. Open [publisher.jumpermcp.dev](https://publisher.jumpermcp.dev/), choose **Install on my Cloudflare**, and sign in to Cloudflare. If you're interrupted, the installer resumes where it stopped.
 2. Open the setup link the installer shows you and create your password. The link is single-use and expires quickly, so nobody else can claim your Publisher.
-3. In your Publisher's **Cloudflare settings**, add a Cloudflare API token with **Edit** permission for **Workers Scripts**. The installer walks you through creating it. Paste the Cloudflare API token *only* in the Publisher, never into a chat. This API token connects your Publisher with your Cloudflare. Jumper MCP (from where you started the installer) will not get to know it.
+3. In your Publisher's **Settings**, add a Cloudflare API token with **Edit** permission for **Workers Scripts**. The installer walks you through creating it. Paste the Cloudflare API token *only* in the Publisher, never into a chat. This API token connects your Publisher with your Cloudflare. Jumper MCP (from where you started the installer) will not get to know it.
 4. Add Publisher to your AI client with the *MCP URL* from your Publisher's **AI connections** panel, including `/mcp` at the end. ChatGPT: **Plugins → Add → Custom MCP server**. Claude: see [Using Publisher with Claude](#using-publisher-with-claude). Sign in and approve access.
 
 ## How to use (daily)
@@ -62,10 +63,20 @@ Your Publisher's control panel lists every site. From there you can unpublish (h
 Needs Publisher 0.1.16 or later (update in your Publisher's control panel).
 
 - **Connect:** In Claude, open **Settings → Connectors → Add custom connector** and paste the MCP URL from your Publisher's **AI connections** panel. Claude signs in through claude.ai and registers with a client secret; Publisher accepts that for ChatGPT's and Claude's own callbacks only. A connector added on claude.ai is also available in Claude Desktop, mobile and Claude Code.
-- **Claude Code with its own connection:** `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in. This signs in through `localhost` on your computer, which is off by default: allow it under **AI connections → AI apps on this computer**. Any program on your computer can then ask for access, so approve only sign-ins you just started.
+- **Claude Code with its own connection:** this signs in through `localhost` on your computer, which is off by default: allow it under **AI connections → AI apps on this computer**. Any program on your computer can then ask for access, so approve only sign-ins you just started. Then either:
+  - install the plugin, which adds the connection plus a skill for publishing, editing, uploads and undo: `/plugin install jumper-publisher --marketplace JumperMCP/jumper-publisher`, paste your MCP URL when asked, then `/mcp` to sign in; or
+  - add the server alone: `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in.
 - **Images, ZIPs and large files:** Claude can only send text through its tools. For anything else, it asks your Publisher for a one-time upload link (valid 10 minutes) and sends the file there from its code sandbox or shell, so the file never passes through the chat. On claude.ai this needs **Settings → Capabilities → Code execution and file creation** on, **Allow network egress** on, and your Publisher's address under **Additional allowed domains** (your `publisher-….workers.dev` host, or `*.workers.dev`). Claude Code needs nothing extra.
 - **After a Publisher update:** In Claude's connector settings, use **Refresh tool list** so Claude sees new tools.
 - **Access:** Each sign-in appears under **AI connections → Connected apps** with **Revoke**. The claude.ai connector used inside Claude Code shares claude.ai's sign-in, so revoking it signs out both.
+
+## Using Publisher with Codex
+
+Not yet tested; these steps follow Codex's documented MCP setup.
+
+1. Allow sign-ins from your computer under **AI connections → AI apps on this computer**. Codex signs in through `127.0.0.1` on your computer.
+2. `codex mcp add publisher --url <your MCP URL>`
+3. `codex mcp login publisher`, then sign in with your owner password and approve access.
 
 ## What it can host
 

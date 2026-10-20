@@ -1,7 +1,7 @@
 {
   "name": "jumper-publisher",
   "displayName": "Jumper Publisher",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Publish websites from Claude to your own Cloudflare account, then edit, undo, export or unpublish them from any later chat.",
   "author": {
     "name": "Jumper MCP",
