@@ -107,6 +107,18 @@ export class Publisher extends DurableObject<Env> {
       }),
     );
   }
+  // Signs out every AI app; used when the owner password changes or is recovered.
+  private async revokeAllClients() {
+    const oauth = oauthHelpers(this.env);
+    let cursor: string | undefined;
+    do {
+      const page = await oauth.listUserGrants("owner", { limit: 100, cursor });
+      for (const grant of page.items)
+        await oauth.revokeGrant(grant.id, "owner");
+      cursor = page.cursor;
+    } while (cursor);
+    for (const [key] of this.store.list("client-used:")) this.store.delete(key);
+  }
   async fetch(request: Request) {
     return this.exclusive(async () => {
       try {
@@ -313,6 +325,7 @@ export class Publisher extends DurableObject<Env> {
         body.get("password") ?? "",
         path === "/recover",
       );
+      if (path === "/recover") await this.revokeAllClients();
       return this.redirect("/", sessionCookie(session.token));
     }
     if (path === "/login" && request.method === "GET")
@@ -462,6 +475,14 @@ export class Publisher extends DurableObject<Env> {
         await oauth.revokeGrant(match.id, "owner");
         this.store.delete("client-used:" + match.clientId);
         return this.redirect("/#connections");
+      }
+      if (path === "/password") {
+        const session = await this.auth.changePassword(
+          body.get("current") ?? "",
+          body.get("password") ?? "",
+        );
+        await this.revokeAllClients();
+        return this.redirect("/", sessionCookie(session.token));
       }
       if (path === "/logout") {
         await this.auth.logout(request);

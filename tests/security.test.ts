@@ -47,6 +47,50 @@ test("single-use setup, recovery, login throttling and epoch invalidation", asyn
     /Wait 15 minutes/,
   );
 });
+test("password change needs the current password, rotates the epoch and ends every session", async () => {
+  const store = new TestStore(),
+    auth = new OwnerAuth(store, {
+      SETUP_TOKEN_HASH: await sha256("setup"),
+      SETUP_EXPIRES_AT: String(Date.now() + 60000),
+    });
+  const first = await auth.setup("setup", "a long secure password");
+  const other = await auth.login("a long secure password");
+  const epoch = auth.epoch();
+  const browser = (token: string) =>
+    new Request("https://owner.example", {
+      headers: { Cookie: sessionCookie(token) },
+    });
+  await assert.rejects(
+    auth.changePassword("wrong current", "a brand new password"),
+    /Incorrect password/,
+  );
+  await assert.rejects(
+    auth.changePassword("a long secure password", "too short"),
+    /12–256/,
+  );
+  await assert.rejects(
+    auth.changePassword("a long secure password", "a long secure password"),
+    /differs/,
+  );
+  assert.equal(auth.epoch(), epoch);
+  const fresh = await auth.changePassword(
+    "a long secure password",
+    "a brand new password",
+  );
+  assert.notEqual(auth.epoch(), epoch);
+  await assert.rejects(auth.session(browser(first.token)), /Sign in/);
+  await assert.rejects(auth.session(browser(other.token)), /Sign in/);
+  assert.equal((await auth.session(browser(fresh.token))).csrf, fresh.csrf);
+  await assert.rejects(auth.login("a long secure password"), /Incorrect/);
+  await auth.login("a brand new password");
+  // Wrong current passwords count toward the sign-in throttle.
+  for (let i = 0; i < 10; i++)
+    await assert.rejects(
+      auth.changePassword("guess " + i, "another new password"),
+      /Incorrect/,
+    );
+  await assert.rejects(auth.login("a brand new password"), /Wait 15 minutes/);
+});
 test("untrusted sibling origins, missing CSRF and cookie tossing are rejected", async () => {
   const store = new TestStore(),
     auth = new OwnerAuth(store, {

@@ -1,3 +1,11 @@
+# 0.1.18 — change your owner password
+
+- **Change owner password.** In **Cloudflare settings → Change owner password**, enter your current password and a new one (12–256 characters). Wrong current passwords count toward the same limit as sign-in: 10 tries per 15 minutes.
+- **Everyone else is signed out.** A password change ends every other browser session and revokes every connected AI app, so access shared with someone else (for example a reviewer) ends with the old password. You stay signed in. Reconnect the AI apps you still use.
+- **Password recovery also clears AI connections.** Resetting a lost password from the Cloudflare dashboard already blocked existing AI apps; they are now also removed from **AI connections → Connected apps** instead of lingering there.
+
+No migration, credential, or origin changes.
+
 # 0.1.17 — release channel with rollback protection
 
 - **Updates without editing Cloudflare settings.** Publishers now follow the release channel `https://publisher.jumpermcp.dev/releases/`, which always serves the newest signed release. **Check for updates** offers each new release; you still review and approve every update. New installations use the channel automatically. To switch an existing installation once, set the Worker variable `RELEASE_BASE_URL` to `https://publisher.jumpermcp.dev/releases/`.

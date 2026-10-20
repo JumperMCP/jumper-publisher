@@ -129,6 +129,32 @@ export class OwnerAuth {
     return this.createSession(epoch);
   }
   async login(password: string) {
+    const owner = await this.verify(password);
+    return this.createSession(owner.epoch);
+  }
+  // A new epoch ends every browser session and every AI app grant; the caller gets a fresh session.
+  async changePassword(current: string, password: string) {
+    requireThat(
+      password.length >= 12 && password.length <= 256,
+      "weak_password",
+      "Use a new password of 12–256 characters.",
+    );
+    requireThat(
+      password !== current,
+      "same_password",
+      "Choose a new password that differs from the current one.",
+    );
+    await this.verify(current);
+    const salt = randomToken(),
+      hash = await passwordHash(password, salt),
+      epoch = randomToken();
+    this.store.transaction(() => {
+      this.store.put("owner", { salt, hash, epoch });
+      for (const [key] of this.store.list("session:")) this.store.delete(key);
+    });
+    return this.createSession(epoch);
+  }
+  private async verify(password: string) {
     const attempts = this.store.get<{ count: number; until: number }>(
       "login-attempts",
     ) ?? { count: 0, until: 0 };
@@ -159,7 +185,7 @@ export class OwnerAuth {
       401,
     );
     this.store.delete("login-attempts");
-    return this.createSession(owner.epoch);
+    return owner;
   }
   private async createSession(epoch: string) {
     const token = randomToken();

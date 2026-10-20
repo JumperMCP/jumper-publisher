@@ -535,6 +535,139 @@ test("AI connections: owner turns on local sign-in, sees the client, and revokes
     await mf.dispose();
   }
 });
+test("owner changes the password: other browsers and AI apps are signed out", async () => {
+  const mf = await start(),
+    callback = "https://chatgpt.example/callback";
+  try {
+    const call = (
+      path: string,
+      init: NonNullable<Parameters<Miniflare["dispatchFetch"]>[1]> = {},
+    ) => mf.dispatchFetch(origin + path, { ...init, redirect: "manual" });
+    const post = (
+      path: string,
+      cookie: string,
+      fields: Record<string, string>,
+    ) =>
+      call(path, {
+        method: "POST",
+        headers: {
+          Origin: origin,
+          Cookie: cookie,
+          Accept: "text/html",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(fields),
+      });
+    let r = await post("/setup", "", {
+      token: "setup-token",
+      password: "a secure owner password",
+    });
+    const cookie = r.headers.get("set-cookie")!.split(";")[0];
+    r = await post("/login", "", { password: "a secure owner password" });
+    const otherBrowser = r.headers.get("set-cookie")!.split(";")[0];
+    r = await call("/", { headers: { Cookie: cookie } });
+    let html = await r.text();
+    const csrf = html.match(/name="csrf" value="([^"]+)"/)![1];
+    assert.match(html, /Change owner password/);
+    r = await call("/oauth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_name: "Test ChatGPT",
+        redirect_uris: [callback],
+        token_endpoint_auth_method: "none",
+        grant_types: ["authorization_code", "refresh_token"],
+        response_types: ["code"],
+      }),
+    });
+    const client = (await r.json()) as { client_id: string },
+      verifier = "d".repeat(43);
+    r = await call(
+      "/authorize?" +
+        new URLSearchParams({
+          client_id: client.client_id,
+          redirect_uri: callback,
+          response_type: "code",
+          resource: origin + "/mcp",
+          scope: "projects:read projects:write",
+          state: "s",
+          code_challenge: await challengeFor(verifier),
+          code_challenge_method: "S256",
+        }),
+      { headers: { Cookie: cookie } },
+    );
+    const handle = (await r.text()).match(/name="handle" value="([^"]+)"/)![1],
+      consentCookie = r.headers.get("set-cookie")!.split(";")[0];
+    r = await post("/authorize", cookie + "; " + consentCookie, {
+      csrf,
+      handle,
+      decision: "approve",
+    });
+    const code = new URL(r.headers.get("Location")!).searchParams.get("code")!;
+    r = await call("/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: client.client_id,
+        code,
+        code_verifier: verifier,
+        redirect_uri: callback,
+        resource: origin + "/mcp",
+      }),
+    });
+    const { access_token } = (await r.json()) as { access_token: string };
+    const tools = () =>
+      call("/mcp", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + access_token,
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+        },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+      });
+    assert.equal((await tools()).status, 200);
+
+    r = await post("/password", cookie, {
+      csrf,
+      current: "wrong password",
+      password: "a fresh owner password",
+    });
+    assert.equal(r.status, 401);
+    assert.match(await r.text(), /Incorrect password/);
+    assert.equal((await tools()).status, 200, "a failed change keeps access");
+    r = await post("/password", cookie, {
+      current: "a secure owner password",
+      password: "a fresh owner password",
+    });
+    assert.equal(r.status, 403, "CSRF token required");
+
+    r = await post("/password", cookie, {
+      csrf,
+      current: "a secure owner password",
+      password: "a fresh owner password",
+    });
+    assert.equal(r.status, 303);
+    const newCookie = r.headers.get("set-cookie")!.split(";")[0];
+    assert.equal((await tools()).status, 401);
+    for (const stale of [cookie, otherBrowser]) {
+      r = await call("/", { headers: { Cookie: stale } });
+      assert.equal(r.status, 303);
+      assert.equal(r.headers.get("location"), "/login");
+    }
+    r = await call("/", { headers: { Cookie: newCookie } });
+    html = await r.text();
+    assert.match(html, /Change owner password/);
+    assert.match(html, /No AI app is connected yet/);
+    r = await post("/login", "", { password: "a secure owner password" });
+    assert.equal(r.status, 401);
+    r = await post("/login", "", { password: "a fresh owner password" });
+    assert.equal(r.status, 303);
+  } finally {
+    await mf.dispose();
+  }
+});
 test("Claude registers as a confidential client and completes sign-in with its secret", async () => {
   const mf = await start(),
     callback = "https://claude.ai/api/mcp/auth_callback";
