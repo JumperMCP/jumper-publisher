@@ -14148,6 +14148,30 @@ async function unzip(stream) {
 __name(unzip, "unzip");
 
 // src/releases.ts
+var VERSION = /^\d+\.\d+\.\d+$/;
+function compareVersions(a, b) {
+  const pa = a.split(".").map(Number), pb = b.split(".").map(Number);
+  for (let i2 = 0; i2 < 3; i2++) if (pa[i2] !== pb[i2]) return pa[i2] - pb[i2];
+  return 0;
+}
+__name(compareVersions, "compareVersions");
+function pinnedRelease(base) {
+  return /\/\d+\.\d+\.\d+\/?$/.test(new URL(base).pathname);
+}
+__name(pinnedRelease, "pinnedRelease");
+function requireNoDowngrade(base, installed, offered) {
+  requireThat(
+    VERSION.test(offered),
+    "invalid_release",
+    "The release version is not valid."
+  );
+  requireThat(
+    pinnedRelease(base) || !VERSION.test(installed) || compareVersions(offered, installed) >= 0,
+    "downgrade_refused",
+    `The release channel offers ${offered}, which is older than the installed ${installed}. Publisher does not install older versions from the channel.`
+  );
+}
+__name(requireNoDowngrade, "requireNoDowngrade");
 async function verifyRelease(release, modules, publicKey) {
   const m = release.manifest;
   requireThat(
@@ -14338,6 +14362,11 @@ var Updates = class {
     const { signed, modules } = await downloadRelease(
       this.env.RELEASE_BASE_URL,
       this.env.RELEASE_PUBLIC_KEY
+    );
+    requireNoDowngrade(
+      this.env.RELEASE_BASE_URL,
+      this.env.RELEASE_VERSION,
+      signed.manifest.version
     );
     const next = {
       id: crypto.randomUUID(),
