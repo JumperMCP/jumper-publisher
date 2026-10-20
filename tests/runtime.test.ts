@@ -568,7 +568,7 @@ test("owner changes the password: other browsers and AI apps are signed out", as
     r = await call("/", { headers: { Cookie: cookie } });
     let html = await r.text();
     const csrf = html.match(/name="csrf" value="([^"]+)"/)![1];
-    assert.match(html, /Change owner password/);
+    assert.match(html, /Change Publisher login password/);
     r = await call("/oauth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -658,7 +658,7 @@ test("owner changes the password: other browsers and AI apps are signed out", as
     }
     r = await call("/", { headers: { Cookie: newCookie } });
     html = await r.text();
-    assert.match(html, /Change owner password/);
+    assert.match(html, /Change Publisher login password/);
     assert.match(html, /No AI app is connected yet/);
     r = await post("/login", "", { password: "a secure owner password" });
     assert.equal(r.status, 401);

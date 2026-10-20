@@ -115,7 +115,7 @@ test("Publisher cockpit fits desktop, scrolls long lists, and preserves owner fo
         : input,
     );
     const response = page(
-      "Publishing, at a glance.",
+      "",
       body,
       200,
       {},

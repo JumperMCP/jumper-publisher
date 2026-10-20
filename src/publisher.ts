@@ -552,7 +552,7 @@ export class Publisher extends DurableObject<Env> {
           .sort((a, b) => b.created - a.created)
           .slice(0, 10);
       return page(
-        "Publishing, at a glance.",
+        "",
         dashboard({
           origin: this.env.PUBLISHER_ORIGIN,
           account: this.env.ACCOUNT_ID,
