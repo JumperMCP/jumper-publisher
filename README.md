@@ -1,23 +1,24 @@
-# Publisher plugin for ChatGPT
+# Jumper Publisher
 
-Ask ChatGPT to create a web page, and receive a public address where it is hosted. Come back weeks later in a new chat to change it. The pages live in **your own Cloudflare account**, on the free plan. **Publisher** is made for personal pages and small projects that need to be visible right away.
+Ask Claude, ChatGPT or another AI client to create a web page, and receive a public address where it is hosted. Come back weeks later in a new chat, even in a different AI client, to change it. The pages live in **your own Cloudflare account**, on the free plan. **Publisher** is made for personal pages and small projects that need to be visible right away.
 
 You already swapped coding for prompting. Publisher drops the next chore: downloading files, finding a host, and uploading again for every small fix.
 
-* **Install now:** [chatgpt-to-public.jumpermcp.dev](https://chatgpt-to-public.jumpermcp.dev/) 
+* **Install now:** [publisher.jumpermcp.dev](https://publisher.jumpermcp.dev/)
+* **Docs:** [jumpermcp.dev/publisher/docs](https://jumpermcp.dev/publisher/docs/) · **Privacy:** [jumpermcp.dev/publisher/privacy](https://jumpermcp.dev/publisher/privacy/) · **Support:** support@jumpermcp.com
 * **Example site:** [pants-math.snlr308.workers.dev](https://pants-math.snlr308.workers.dev/) (made by Astra 6, hosted by Cloudflare)
 
-![From chat to public website: you ask ChatGPT, your Publisher in your Cloudflare account puts the site online, and the Cockpit lets you manage, undo and update.](marketing/pipeline-diagram/pipeline-clean.png)
+![From chat to public website: you ask your AI client, your Publisher in your Cloudflare account puts the site online, and the Cockpit lets you manage, undo and update.](marketing/pipeline-diagram/pipeline-clean.png)
 
 ---
 
 ## What Publisher does
 
-You ask ChatGPT: *"Create a website about a new science called Pants Math, with a widget where visitors test pants hypotheses, and publish it."* ChatGPT creates the website, hands it to your Publisher, and replies to you with an address like `https://pants-math.<your-name>.workers.dev`
+You ask your AI client: *"Create a website about a new science called Pants Math, with a widget where visitors test pants hypotheses, and publish it."* It creates the website, hands it to your Publisher, and replies to you with an address like `https://pants-math.<your-name>.workers.dev`
 
-A month later, in a fresh chat, maybe on your phone: *"Make the pants-math background blue."* ChatGPT finds the site, changes only the background, and republishes at the same address. Don't like the background after all? Ask it to undo.
+A month later, in a fresh chat, maybe on your phone, maybe in Claude instead of ChatGPT: *"Make the pants-math background blue."* The AI finds the site, changes only the background, and republishes at the same address. Don't like the background after all? Ask it to undo.
 
-No GitHub, terminal, build step, or OpenAI API key needed.
+No GitHub, terminal, build step, or AI provider API key needed.
 
 ## Videos
 
@@ -45,16 +46,16 @@ No GitHub, terminal, build step, or OpenAI API key needed.
 
 ## How to install (once)
 
-1. Open [chatgpt-to-public.jumpermcp.dev](https://chatgpt-to-public.jumpermcp.dev/), choose **Install on my Cloudflare**, and sign in to Cloudflare. If you're interrupted, the installer resumes where it stopped.
+1. Open [publisher.jumpermcp.dev](https://publisher.jumpermcp.dev/), choose **Install on my Cloudflare**, and sign in to Cloudflare. If you're interrupted, the installer resumes where it stopped.
 2. Open the setup link the installer shows you and create your password. The link is single-use and expires quickly, so nobody else can claim your Publisher.
-3. In your Publisher's **Cloudflare settings**, add a Cloudflare API token with **Edit** permission for **Workers Scripts**. The installer walks you through creating it. Paste the Cloudflare API token *only* in the Publisher, never into ChatGPT. This API token connects your Publisher with your Cloudflare. Jumper MCP (from where you started the installer) will not get to know it.
-4. In ChatGPT, open **Plugins → Add → Custom MCP server** and paste the *MCP URL* from your Publisher's **AI connections** panel, including `/mcp` at the end. Sign in and approve access.
+3. In your Publisher's **Cloudflare settings**, add a Cloudflare API token with **Edit** permission for **Workers Scripts**. The installer walks you through creating it. Paste the Cloudflare API token *only* in the Publisher, never into a chat. This API token connects your Publisher with your Cloudflare. Jumper MCP (from where you started the installer) will not get to know it.
+4. Add Publisher to your AI client with the *MCP URL* from your Publisher's **AI connections** panel, including `/mcp` at the end. ChatGPT: **Plugins → Add → Custom MCP server**. Claude: see [Using Publisher with Claude](#using-publisher-with-claude). Sign in and approve access.
 
 ## How to use (daily)
 
-Prompt away to create new websites. Reference your Publisher plugin to have the result published. To find an oldwebsite, paste its name, project ID, or URL into ChatGPT. It will use Publisher to find the project, without you having to look for the original conversation. Ask to undo, and the previous version goes back online.
+Prompt away to create new websites. Reference your Publisher plugin to have the result published. To find an old website, paste its name, project ID, or URL into any connected AI client. It will use Publisher to find the project, without you having to look for the original conversation. Ask to undo, and the previous version goes back online.
 
-Your Publisher's control panel lists every site. From there you can unpublish (hide), export, delete, and update the Publisher itself. If ChatGPT tries to rewrite far more or far less than you asked for (the classic "rest of the code unchanged"), the Publisher flags it instead of publishing. Multiple chats editing the same site are also flagged can't silently overwrite each other (use case: project open in phone session as well as desktop session).
+Your Publisher's control panel lists every site. From there you can unpublish (hide), export, delete, and update the Publisher itself. If the AI tries to rewrite far more or far less than you asked for (the classic "rest of the code unchanged"), the Publisher flags it instead of publishing. Multiple chats editing the same site are also flagged can't silently overwrite each other (use case: project open in phone session as well as desktop session).
 
 ## Using Publisher with Claude
 
@@ -106,7 +107,7 @@ Needs Publisher 0.1.16 or later (update in your Publisher's control panel).
 
 | | Publish from your AI chat | Hosted in your own account | Quick to set up | Edit from a later chat | Version history / undo | Your own domain | Server code | Database |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **[Publisher](https://chatgpt-to-public.jumpermcp.dev/)** (this project) | ✅ ChatGPT + MCP | ✅ Cloudflare | 🟡 one-time install | ✅ | ✅ last 20 | 🟡 manual today ¹ | 🔜 planned ² | ❌ |
+| **[Publisher](https://publisher.jumpermcp.dev/)** (this project) | ✅ Claude, ChatGPT + MCP | ✅ Cloudflare | 🟡 one-time install | ✅ | ✅ last 20 | 🟡 manual today ¹ | 🔜 planned ² | ❌ |
 | **[WebsitePublisher.ai](https://www.websitepublisher.ai/)** (hosted AI publisher) | ✅ many AI chats | ❌ their platform | ✅ sign in | ✅ | ✅ count by plan | 🟡 paid plans | 🟡 built-in only | ✅ |
 | **[ChatGPT Sites](https://help.openai.com/en/articles/20001339-creating-and-using-chatgpt-sites)** (paid plans, private or public) | ✅ ChatGPT only ⁴ | ❌ OpenAI | ✅ none | ✅ | ✅ saved versions | ✅ | 🟡 JS/TS only | ✅ |
 | **[Claude artifact](https://support.claude.com/en/articles/9547008-publish-and-share-artifacts)** (published link) | ✅ Claude only | ❌ claude.ai | ✅ none | 🟡 original chat | 🟡 | ❌ | 🟡 AI calls only | 🟡 paid plans, 20 MB |
