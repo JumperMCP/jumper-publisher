@@ -1,7 +1,7 @@
 # TODO
 
 ++ 2026-10-00 - Per-client access list and revoke - Approved MCP clients (ChatGPT, local AI clients via localhost callbacks) keep access until the owner resets the password, which signs out every client at once. Add a control-panel list of granted clients (name, callback, approval date, last use) with a revoke button per client. `@cloudflare/workers-oauth-provider` exposes grant listing and revocation (`listUserGrants`, `revokeGrant`). This matters most once `ALLOW_LOOPBACK_CALLBACKS` is on, because any local program can request access and the client name is self-reported.
--- 2026-10-19 - Password reset via cockpit:
+++ 2026-10-19 - Password reset via cockpit (shipped in 0.1.18 as Change Publisher login password, label in 0.1.19):
 
 The control panel has no "change password" button.
 The only way is the recovery flow, run from Cloudflare:
