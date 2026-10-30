@@ -299,6 +299,14 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
     });
     assert.equal(r.status, 200, "a foreign Origin is fine with a bearer token");
+    r = await call("/mcp", {
+      headers: {
+        Authorization: "Bearer " + token.access_token,
+        Accept: "text/event-stream",
+      },
+    });
+    assert.equal(r.status, 405, "no standalone SSE stream to retry");
+    assert.equal(r.headers.get("Allow"), "POST");
     r = await call("/", { headers: { Origin: "https://muse.ai" } });
     assert.equal(
       r.status,

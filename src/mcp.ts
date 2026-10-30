@@ -97,6 +97,18 @@ export async function importFiles(
   return new Map<string, Uint8Array>();
 }
 export async function handleMcp(request: Request, services: ToolServices) {
+  // Stateless: there is no session to push server messages on, and the SDK would answer GET with
+  // a stream it closes at once, which clients retry (Antigravity gives up after 5). 405 is the
+  // spec's way to say this endpoint has no standalone SSE stream.
+  if (request.method === "GET")
+    return Response.json(
+      {
+        jsonrpc: "2.0",
+        error: { code: -32000, message: "Method not allowed: no SSE stream." },
+        id: null,
+      },
+      { status: 405, headers: { Allow: "POST" } },
+    );
   const { projects, env } = services;
   const server = new McpServer(
     { name: "Personal Publisher", version: env.RELEASE_VERSION },

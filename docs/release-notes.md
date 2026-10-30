@@ -1,3 +1,9 @@
+# 0.1.23 — Antigravity stays connected
+
+- **No more failing background stream.** MCP clients may open a background event stream with a GET request. Publisher has no such stream, but it answered with one and closed it at once, so clients retried. Antigravity gave up after five tries and marked Publisher as failed ("standalone SSE stream: exceeded 5 retries without progress"), even though sign-in and tools worked. Publisher now answers `405 Method Not Allowed`, which tells clients there is no stream. ChatGPT, Claude and other clients already handle this.
+
+No migration, credential, or origin changes.
+
 # 0.1.22 — Muse can use the tools
 
 - **Muse's tool calls are accepted.** Publisher refused every MCP request that carried an `Origin` header from another site with `403 Unexpected origin`, before checking the sign-in. Muse sends one, so it could connect but not list or call tools. The MCP endpoint now accepts any `Origin`, because it only accepts access tokens, never browser cookies. The control panel and sign-in pages still refuse requests from other sites.
