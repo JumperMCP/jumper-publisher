@@ -1,3 +1,10 @@
+# 0.1.21 — Muse sign-in fix
+
+- **Muse can finish connecting.** After you press **Allow project access**, Publisher now shows a short "Returning to your AI client" page that forwards the browser to the AI client, instead of redirecting straight away. Muse's callback forwards again to a second address (agent.meta.ai → muse.ai), and the browser blocked that second hop after the approval form. Muse never got its sign-in code, and pressing Allow again showed "This authorization was not started in this browser". ChatGPT, Claude and other clients work as before.
+- **Leftover Muse entries.** Each blocked attempt still created an entry under **AI connections → Connected apps** ("not used yet"). Revoke those, then connect again from Muse.
+
+No migration, credential, or origin changes.
+
 # 0.1.20 — Antigravity and Muse can connect
 
 - **Google Antigravity and Meta Muse can sign in.** Their callbacks `https://antigravity.google/oauth-callback` and `https://agent.meta.ai/api/hatch/oauth/callback` are now built in, next to ChatGPT and Claude, so an update enables them without editing Worker variables. Callbacks stay exactly allowlisted and PKCE S256 stays required.

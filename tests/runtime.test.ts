@@ -36,6 +36,21 @@ async function challengeFor(verifier: string) {
     await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)),
   ).toString("base64url");
 }
+// After consent the Publisher returns a page that refreshes to the client's callback, not a 302,
+// so a callback that redirects again to another origin isn't blocked by CSP form-action.
+function clientReturn(r: {
+  status: number;
+  headers: { get(name: string): string | null };
+}) {
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("Location"), null);
+  assert.match(
+    r.headers.get("content-security-policy")!,
+    /form-action 'self';/,
+  );
+  const refresh = r.headers.get("Refresh")!.match(/^0; url=(.+)$/)!;
+  return new URL(refresh[1]);
+}
 test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP and OAuth registration", async () => {
   const mf = await start();
   try {
@@ -243,8 +258,7 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
       },
       body: new URLSearchParams({ csrf, handle, decision: "approve" }),
     });
-    assert.equal(r.status, 302);
-    const code = new URL(r.headers.get("Location")!).searchParams.get("code")!;
+    const code = clientReturn(r).searchParams.get("code")!;
     r = await call("/oauth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -379,7 +393,7 @@ test("loopback callbacks: opt-in registration, consent warning and code exchange
     assert.equal(r.status, 200);
     assert.match(
       r.headers.get("content-security-policy")!,
-      /form-action 'self' http:\/\/127\.0\.0\.1:53682;/,
+      /form-action 'self';/,
     );
     const consentHtml = await r.text();
     assert.match(consentHtml, /class="warning"/);
@@ -395,8 +409,7 @@ test("loopback callbacks: opt-in registration, consent warning and code exchange
       },
       body: new URLSearchParams({ csrf, handle, decision: "approve" }),
     });
-    assert.equal(r.status, 302);
-    const location = new URL(r.headers.get("Location")!);
+    const location = clientReturn(r);
     assert.equal(location.origin + location.pathname, callback);
     r = await call("/oauth/token", {
       method: "POST",
@@ -491,7 +504,7 @@ test("AI connections: owner turns on local sign-in, sees the client, and revokes
       handle,
       decision: "approve",
     });
-    const code = new URL(r.headers.get("Location")!).searchParams.get("code")!;
+    const code = clientReturn(r).searchParams.get("code")!;
     r = await call("/oauth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -603,7 +616,7 @@ test("owner changes the password: other browsers and AI apps are signed out", as
       handle,
       decision: "approve",
     });
-    const code = new URL(r.headers.get("Location")!).searchParams.get("code")!;
+    const code = clientReturn(r).searchParams.get("code")!;
     r = await call("/oauth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -736,8 +749,7 @@ test("Claude registers as a confidential client and completes sign-in with its s
         decision: "approve",
       }),
     );
-    assert.equal(r.status, 302);
-    const location = new URL(r.headers.get("Location")!);
+    const location = clientReturn(r);
     assert.equal(location.origin + location.pathname, callback);
     const exchange = (secret: string) =>
       call("/oauth/token", {
@@ -823,7 +835,7 @@ test("upload links: binary file and ZIP reach a draft without passing through MC
       body: new URLSearchParams({
         grant_type: "authorization_code",
         client_id: client.client_id,
-        code: new URL(r.headers.get("Location")!).searchParams.get("code")!,
+        code: clientReturn(r).searchParams.get("code")!,
         code_verifier: verifier,
         redirect_uri: callback,
         resource: origin + "/mcp",
