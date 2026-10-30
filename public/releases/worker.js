@@ -46979,6 +46979,15 @@ async function importFiles(args, env, uploads) {
 }
 __name(importFiles, "importFiles");
 async function handleMcp(request, services) {
+  if (request.method === "GET")
+    return Response.json(
+      {
+        jsonrpc: "2.0",
+        error: { code: -32e3, message: "Method not allowed: no SSE stream." },
+        id: null
+      },
+      { status: 405, headers: { Allow: "POST" } }
+    );
   const { projects, env } = services;
   const server = new McpServer(
     { name: "Personal Publisher", version: env.RELEASE_VERSION },
