@@ -47890,7 +47890,7 @@ var worker_default = {
       if (url2.origin !== env.PUBLISHER_ORIGIN)
         return new Response("Unexpected host", { status: 400 });
       const origin = request.headers.get("origin");
-      if (origin && origin !== env.PUBLISHER_ORIGIN)
+      if (origin && origin !== env.PUBLISHER_ORIGIN && url2.pathname !== "/mcp")
         return new Response("Unexpected origin", { status: 403 });
       return await provider(env).fetch(request, env, ctx);
     } catch (error62) {
