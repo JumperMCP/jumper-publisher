@@ -103,7 +103,10 @@ The description above and the "daily use" video refer to chatgpt.com. Jumper Pub
 
 ### Antigravity
 
-- Install the "Jumper Publisher" plugin via the official Antigravity Marketplace (planned feature).
+Needs Publisher 0.1.23 or later. Antigravity signs in through Google's page, so local sign-in can stay off.
+
+- **Plugin** (adds the `publish-website` skill; Marketplace listing pending): clone this repository, run `agy plugin install ./jumper-publisher/antigravity`, then in the CLI `/plugin` → **jumper-publisher** → **Configure MCP servers** and paste your MCP URL. Open `/mcp`, select **jumper-publisher_mcp** → **Authenticate**, sign in, approve, and paste the code from Google's page back into Antigravity.
+- **MCP server only:** `agy mcp add publisher <your MCP URL>`, then `/mcp` → **publisher** → **Authenticate** as above.
 
 ### Muse
 

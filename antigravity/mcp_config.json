@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "mcp": {
+      "serverUrl": "${PUBLISHER_URL}",
+      "variables": [
+        {
+          "name": "PUBLISHER_URL",
+          "title": "Publisher MCP URL",
+          "description": "The MCP URL of your own Publisher, from its control panel under AI connections. It ends in /mcp, for example https://publisher-1a2b3c4d.your-name.workers.dev/mcp.",
+          "link": "https://publisher.jumpermcp.dev"
+        }
+      ]
+    }
+  }
+}

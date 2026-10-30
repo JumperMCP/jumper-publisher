@@ -5,7 +5,7 @@ description: Publish, change, undo or unpublish a static website through the use
 
 # Publish a website with Jumper Publisher
 
-The user's Publisher runs in their own Cloudflare account. Its tools (`list_projects`, `get_project`, `read_files`, `search_files`, `stage_project`, `edit_file`, `create_upload`, `publish_project`, `get_operation`, `restore_revision`, `export_project`, `unpublish_project`) come from the `publisher` MCP server. Everything published is public on the internet.
+The user's Publisher runs in their own Cloudflare account. Its tools (`list_projects`, `get_project`, `read_files`, `search_files`, `stage_project`, `edit_file`, `create_upload`, `publish_project`, `get_operation`, `restore_revision`, `export_project`, `unpublish_project`) come from the Jumper Publisher MCP server. Everything published is public on the internet.
 
 ## New site
 

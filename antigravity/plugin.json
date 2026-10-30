@@ -1,0 +1,18 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "jumper-publisher",
+  "displayName": "Jumper Publisher",
+  "version": "0.1.0",
+  "description": "Publish websites from your agent to your own Cloudflare account, then edit, undo, export or unpublish them from any later chat.",
+  "logo": "assets/logo.png",
+  "suggestedPrompts": [
+    "Publish this page as a website",
+    "List my published sites",
+    "Change the headline on my site and republish it"
+  ],
+  "author": { "name": "Jumper MCP", "url": "https://jumpermcp.dev" },
+  "homepage": "https://jumpermcp.dev/publisher/",
+  "repository": "https://github.com/JumperMCP/jumper-publisher",
+  "license": "MIT",
+  "keywords": ["website", "publishing", "cloudflare", "static-site", "hosting"]
+}
