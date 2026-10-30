@@ -288,6 +288,23 @@ test("real Worker + SQLite DO: setup, owner UI, sibling isolation, protected MCP
     }
     const tools = await mcp("tools/list");
     assert.equal(tools.result.tools.length, 12);
+    r = await call("/mcp", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token.access_token,
+        Origin: "https://muse.ai",
+        "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    });
+    assert.equal(r.status, 200, "a foreign Origin is fine with a bearer token");
+    r = await call("/", { headers: { Origin: "https://muse.ai" } });
+    assert.equal(
+      r.status,
+      403,
+      "cookie-based pages still refuse a foreign Origin",
+    );
     for (const t of tools.result.tools) {
       assert.ok(t.title, t.name + " needs a title");
       assert.equal(typeof t.annotations.readOnlyHint, "boolean");

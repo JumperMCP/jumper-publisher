@@ -12,7 +12,9 @@ export default {
       if (url.origin !== env.PUBLISHER_ORIGIN)
         return new Response("Unexpected host", { status: 400 });
       const origin = request.headers.get("origin");
-      if (origin && origin !== env.PUBLISHER_ORIGIN)
+      // /mcp authenticates with bearer tokens only, never cookies, so a foreign Origin can't ride
+      // on the owner's session there. Some hosted clients send one from their servers (Muse).
+      if (origin && origin !== env.PUBLISHER_ORIGIN && url.pathname !== "/mcp")
         return new Response("Unexpected origin", { status: 403 });
       return await provider(env).fetch(request, env, ctx);
     } catch (error) {

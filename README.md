@@ -110,6 +110,7 @@ The description above and the "daily use" video refer to chatgpt.com. Jumper Pub
 - Muse does not allow the user to install their own Connectors.  
 - Prompt Muse to install Publisher for you. It expects the server address (your `publisher-xyz.xyz.workers.dev/mcp`), and a note that it uses OAuth, and a URL _allow list_ (provide your `publisher-xyz.xyz.workers.dev`)
 - Muse installs it as needed, and presents a "Connect" button to you.
+- Consider having Muse create a "Skill" named "Publisher", to make it easier to invoke it.
 
 ## What Publisher can host
 
