@@ -47675,8 +47675,7 @@ var Publisher = class extends DurableObject {
           "Connect your AI client",
           `<p>Allow <strong>${escapeHtml(details.clientName)}</strong> to read your projects and publish selected files? The registered client name is self-reported. Continue only if you just started this connection yourself, in ChatGPT or another AI client.</p><p>Callback: <code>${escapeHtml(auth.redirectUri)}</code></p>${loopbackCallback(auth.redirectUri) ? `<p class="warning"><strong>This sign-in returns to a program on the computer you are using now</strong>, not to a website. Any program on this computer can open this page. Approve only if you started this sign-in yourself a moment ago.</p>` : ""}${form("/authorize", session.csrf, hidden("handle", consent.handle) + `<p>Access: ${escapeHtml(SCOPES.join(", "))}. Published files become public.</p><button name="decision" value="approve">Allow project access</button> <button name="decision" value="deny">Deny</button>`)}`,
           200,
-          consent.headers,
-          auth.redirectUri
+          consent.headers
         );
       }
       requireThat(
@@ -47696,7 +47695,7 @@ var Publisher = class extends DurableObject {
           request,
           body.get("handle") ?? ""
         );
-        return new Response(null, { status: 302, headers: denied.headers });
+        return returnToClient(denied.headers);
       }
       const approved = await oauth.approveConsent(
         request,
@@ -47721,7 +47720,7 @@ var Publisher = class extends DurableObject {
         props: { ownerEpoch: this.auth.epoch() }
       });
       approved.headers.set("Location", result.redirectTo);
-      return new Response(null, { status: 302, headers: approved.headers });
+      return returnToClient(approved.headers);
     }
     if (request.method === "POST") {
       const body = await this.formData(request);
@@ -47870,6 +47869,18 @@ var Publisher = class extends DurableObject {
     return new Response(null, { status: 303, headers });
   }
 };
+function returnToClient(headers) {
+  const url2 = headers.get("Location");
+  headers.delete("Location");
+  headers.set("Refresh", `0; url=${url2}`);
+  return page(
+    "Returning to your AI client",
+    `<p>If nothing happens, <a href="${escapeHtml(url2)}">continue to your AI client</a>.</p>`,
+    200,
+    headers
+  );
+}
+__name(returnToClient, "returnToClient");
 
 // src/worker.ts
 var worker_default = {
