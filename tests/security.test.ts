@@ -264,12 +264,16 @@ test("Cloudflare scopes are validated before provisioning and refresh rejects re
     /Reconnect/,
   );
 });
-test("callbacks: built-in ChatGPT and Claude, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
+test("callbacks: built-in ChatGPT, Claude, Antigravity and Muse, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
   const env = (vars: Record<string, string>) => vars as unknown as Env;
   assert.deepEqual(callbacks(env({})), BUILT_IN_CALLBACKS);
-  assert.ok(
-    callbacks(env({})).includes("https://claude.ai/api/mcp/auth_callback"),
-  );
+  for (const uri of [
+    "https://chatgpt.com/connector_platform_oauth_redirect",
+    "https://claude.ai/api/mcp/auth_callback",
+    "https://antigravity.google/oauth-callback",
+    "https://agent.meta.ai/api/hatch/oauth/callback",
+  ])
+    assert.ok(callbacks(env({})).includes(uri), uri);
   assert.ok(
     callbacks(
       env({ CHATGPT_CALLBACKS: '["https://legacy.example/cb"]' }),
@@ -287,6 +291,17 @@ test("callbacks: built-in ChatGPT and Claude, plus ALLOWED_CALLBACKS or legacy C
     !callbacks(
       env({ ALLOWED_CALLBACKS: '["http://plain.example/cb"]' }),
     ).includes("http://plain.example/cb"),
+  );
+});
+test("Muse registers as a public client on its hosted callback", () => {
+  const muse = "https://agent.meta.ai/api/hatch/oauth/callback";
+  assert.equal(
+    registrationAllowed(
+      { redirect_uris: [muse], token_endpoint_auth_method: "none" },
+      callbacks({} as Env),
+      false,
+    ),
+    true,
   );
 });
 test("hosted callbacks may register with a client secret; loopback stays public", () => {

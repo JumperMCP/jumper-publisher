@@ -4,6 +4,8 @@ import type { Env } from "./types";
 export const BUILT_IN_CALLBACKS = [
   "https://chatgpt.com/connector_platform_oauth_redirect",
   "https://claude.ai/api/mcp/auth_callback",
+  "https://antigravity.google/oauth-callback",
+  "https://agent.meta.ai/api/hatch/oauth/callback",
 ];
 export function callbacks(env: Env): string[] {
   // CHATGPT_CALLBACKS is the pre-0.1.14 name; updates inherit Worker variables, so older installs still carry it.

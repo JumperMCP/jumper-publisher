@@ -58,7 +58,7 @@ You're cutting out the middleman: No GitHub needed, or other file host, or termi
 1. Open [publisher.jumpermcp.dev](https://publisher.jumpermcp.dev/), choose **Install on my Cloudflare**, and sign in to Cloudflare. If you're interrupted, the installer resumes where it stopped.
 2. Open the setup link the installer shows you and create your password. The link is single-use and expires quickly, so nobody else can claim your Publisher.
 3. In your Publisher's **Settings**, add a Cloudflare API token with **Edit** permission for **Workers Scripts**. The installer walks you through creating it. Paste the Cloudflare API token *only* in the Publisher, never into a chat. This API token connects your Publisher with your Cloudflare. Jumper MCP (from where you started the installer) will not get to know it.
-4. Add Publisher to your AI client with the *MCP URL* from your Publisher's **AI connections** panel, including `/mcp` at the end. ChatGPT: **Plugins → Add → Custom MCP server**. Claude: see [Using Publisher with Claude](#using-publisher-with-claude). Sign in and approve access.
+4. Add Publisher to your AI agent, using the *MCP URL* from your Publisher's **AI connections** panel, including `/mcp` at the end. Your agent will prompt you to authenticate, using your owner password. Details below, per agent vendor.
 
 ## How to use (daily)
 
@@ -66,7 +66,20 @@ Prompt away to create new websites. Reference your Publisher plugin to have the 
 
 Your Publisher cockpit lists every site. From there you can unpublish (hide), export, delete, and update the Publisher itself. If the agent tries to rewrite far more or far less than you asked for (the classic "rest of the code unchanged"), Publisher flags it instead of publishing. Multiple chats editing the same site can't silently overwrite each other (use case: project open in phone session as well as desktop session).
 
-### Using Publisher with Claude
+--- 
+
+## Installation details, per agent
+
+### ChatGPT
+
+The description above and the "daily use" video refer to chatgpt.com. Jumper Publisher is not found in OpenAI's official Plugin Directory. Tools are only accepted there that bring their own 3rd-party URL. However, Jumper Publisher does not direct your data to itself, it sends your data to _your URL_ instead. This is why you are adding your Publisher plugin manually, as shown in the video:
+
+- At chatgpt.com, under Plugins, "Add --> Add Custom MCP Server".
+- Provide your `publisher-xyz.xyz.workers.dev/mcp` URL.
+- Save and let ChatGPT redirect you to your Publisher.
+- Authenticate with your owner password.
+
+### Claude
 
 - Either: **Add Connector:** At [claude.ai](https://claude.ai), open **Settings → Connectors → Add custom connector** and paste the MCP URL from your Publisher's **AI connections** panel. Claude signs in through claude.ai and registers with a client secret. The connector is now also available in Claude Desktop, mobile and Claude Code.
 - Or: Install the "Jumper Publisher" plugin via the official Claude Directory (submitted, approval pending).
@@ -82,15 +95,21 @@ Your Publisher cockpit lists every site. From there you can unpublish (hide), ex
   - Claude Code CLI: needs nothing extra.
 - **Access:** Each sign-in appears under **AI connections → Connected apps** with option to **Revoke**.
 
-### Using Publisher with Codex
+### Codex
 
 1. Allow sign-ins from your computer under **AI connections → AI apps on this computer**. Codex signs in through `127.0.0.1` on your computer.
 2. `codex mcp add publisher --url <your MCP URL>`
 3. `codex mcp login publisher`, then sign in with your Publisher owner password and _approve_.
 
-### Using Publisher with Google Antigravity
+### Antigravity
 
 - Install the "Jumper Publisher" plugin via the official Antigravity Marketplace (submitted, approval pending).
+
+### Muse
+
+- Muse does not allow the user to install their own Connectors.  
+- Prompt Muse to install Publisher for you. It expects the server address (your `publisher-xyz.xyz.workers.dev/mcp`), and a note that it uses OAuth, and a URL _allow list_ (provide your `publisher-xyz.xyz.workers.dev`)
+- Muse installs it as needed, and presents a "Connect" button to you.
 
 ## What Publisher can host
 

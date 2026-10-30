@@ -58,7 +58,7 @@ export function dashboard(input: {
         "/connections/local",
         csrf,
         hidden("enabled", localSignIn ? "false" : "true") +
-          `<p class="help">${localSignIn ? "On: AI apps on your computer, such as Claude Code, can ask to connect. Any program on this computer can open the approval page, so approve only sign-ins you just started." : "Off: AI apps on your computer, such as Claude Code, cannot connect. ChatGPT and Claude on the web are not affected."}</p><button class="quiet-button">${localSignIn ? "Turn off computer apps" : "Allow AI apps on this computer"}</button>`,
+          `<p class="help">${localSignIn ? "On: AI apps on your computer, such as Claude Code, can ask to connect. Any program on this computer can open the approval page, so approve only sign-ins you just started." : "Off: AI apps on your computer, such as Claude Code, cannot connect. Web apps such as ChatGPT, Claude and Muse are not affected."}</p><button class="quiet-button">${localSignIn ? "Turn off computer apps" : "Allow AI apps on this computer"}</button>`,
       );
   const rows = projects.projects
     .map(

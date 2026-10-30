@@ -1,3 +1,10 @@
+# 0.1.20 — Antigravity and Muse can connect
+
+- **Google Antigravity and Meta Muse can sign in.** Their callbacks `https://antigravity.google/oauth-callback` and `https://agent.meta.ai/api/hatch/oauth/callback` are now built in, next to ChatGPT and Claude, so an update enables them without editing Worker variables. Callbacks stay exactly allowlisted and PKCE S256 stays required.
+- **Settings.** The Cloudflare settings panel is now called **Settings**.
+
+No migration, credential, or origin changes.
+
 # 0.1.19 — Tweak cockpit wording
 
 - Better wording in Publisher cockpit
