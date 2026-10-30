@@ -1,16 +1,23 @@
 # Jumper Publisher
 
-Ask Claude, ChatGPT or another AI client to create a web page, and receive a public address where it is hosted. Come back weeks later in a new chat, even in a different AI client, to change it. The pages live in **your own Cloudflare account**, on the free plan. **Publisher** is made for personal pages and small projects that need to be visible right away.
+Ask Claude, ChatGPT or another Ai agent to create a web page. Once done, you receive a public URL where it is hosted.  
+
+Come back weeks later in a new chat to make changes the the website, even in a different AI agent. The website lives in **your own Cloudflare account** (free or paid). **Publisher** is your perfect solution for personal pages and small projects that need to be visible right away.
 
 You already swapped coding for prompting. Publisher drops the next chore: downloading files, finding a host, and uploading again for every small fix.
 
 * **Install now:** [publisher.jumpermcp.dev](https://publisher.jumpermcp.dev/)
-* **Docs:** [jumpermcp.dev/publisher/docs](https://jumpermcp.dev/publisher/docs/) · **Privacy:** [jumpermcp.dev/publisher/privacy](https://jumpermcp.dev/publisher/privacy/) · **Support:** support@jumpermcp.com
-* **Example site:** [pants-math.snlr308.workers.dev](https://pants-math.snlr308.workers.dev/) (made by Astra 6, hosted by Cloudflare)
+* **Docs:** [jumpermcp.dev/publisher/docs](https://jumpermcp.dev/publisher/docs/) 
+* **Privacy:** [jumpermcp.dev/publisher/privacy](https://jumpermcp.dev/publisher/privacy/) 
+* **Support:** support@jumpermcp.dev
+* **Example site:** [pants-math.snlr308.workers.dev](https://pants-math.snlr308.workers.dev/)
+
+<br />
 
 ![From chat to public website: you ask your AI client, your Publisher in your Cloudflare account puts the site online, and the Cockpit lets you manage, undo and update.](marketing/pipeline-diagram/pipeline-clean.png)
 
----
+<br />
+
 
 ## What Publisher does
 
@@ -18,7 +25,7 @@ You ask your AI client: *"Create a website about a new science called Pants Math
 
 A month later, in a fresh chat, maybe on your phone, maybe in Claude instead of ChatGPT: *"Make the pants-math background blue."* The AI finds the site, changes only the background, and republishes at the same address. Don't like the background after all? Ask it to undo.
 
-No GitHub, terminal, build step, or AI provider API key needed.
+You're cutting out the middleman: No GitHub needed, or other file host, or terminal, or build step, or AI provider API key.
 
 ## Videos
 
@@ -42,8 +49,9 @@ No GitHub, terminal, build step, or AI provider API key needed.
 
 - Cloudflare account, *free or paid*. The Publisher plugin creates Workers and KVs there on your behalf.
 - ChatGPT account, *free or paid*. Free accounts first enable "developer mode" (Settings → Security & login).
-- Or a Claude account (web, Desktop, mobile, Claude Code). See [Using Publisher with Claude](#using-publisher-with-claude).
-- Or Codex. See [Using Publisher with Codex](#using-publisher-with-codex).
+  - Or a Claude account (web, Desktop, mobile, Claude Code). See [Using Publisher with Claude](#using-publisher-with-claude).
+  - Or Codex. See [Using Publisher with Codex](#using-publisher-with-codex).
+  - Or any other MCP-capable agent.
 
 ## How to install (once)
 
@@ -56,40 +64,46 @@ No GitHub, terminal, build step, or AI provider API key needed.
 
 Prompt away to create new websites. Reference your Publisher plugin to have the result published. To find an old website, paste its name, project ID, or URL into any connected AI client. It will use Publisher to find the project, without you having to look for the original conversation. Ask to undo, and the previous version goes back online.
 
-Your Publisher's control panel lists every site. From there you can unpublish (hide), export, delete, and update the Publisher itself. If the AI tries to rewrite far more or far less than you asked for (the classic "rest of the code unchanged"), the Publisher flags it instead of publishing. Multiple chats editing the same site are also flagged can't silently overwrite each other (use case: project open in phone session as well as desktop session).
+Your Publisher cockpit lists every site. From there you can unpublish (hide), export, delete, and update the Publisher itself. If the agent tries to rewrite far more or far less than you asked for (the classic "rest of the code unchanged"), Publisher flags it instead of publishing. Multiple chats editing the same site can't silently overwrite each other (use case: project open in phone session as well as desktop session).
 
-## Using Publisher with Claude
+### Using Publisher with Claude
 
-Needs Publisher 0.1.16 or later (update in your Publisher's control panel).
+- Either: **Add Connector:** At [claude.ai](https://claude.ai), open **Settings → Connectors → Add custom connector** and paste the MCP URL from your Publisher's **AI connections** panel. Claude signs in through claude.ai and registers with a client secret. The connector is now also available in Claude Desktop, mobile and Claude Code.
+- Or: Install the "Jumper Publisher" plugin via the official Claude Directory (submitted, approval pending).
+- Or: **Claude Code CLI with its own connection:** Instead of using claude.ai to create a Connector, you can sign in through `localhost` on your computer: 
+  1. Enable this in your Publisher cockpit: **AI connections → AI apps on this computer**. Any program on your computer can ask for access. Approve only sign-ins you just started. Then:
+  1. Install the plugin. It adds the connection plus a Skill for publishing, editing, uploads and undo. Paste in your Claude Code CLI: `/plugin install jumper-publisher --marketplace JumperMCP/jumper-publisher`(paste your MCP URL when asked). Then:
+  1. `/mcp` to sign in
 
-- **Connect:** In Claude, open **Settings → Connectors → Add custom connector** and paste the MCP URL from your Publisher's **AI connections** panel. Claude signs in through claude.ai and registers with a client secret; Publisher accepts that for ChatGPT's and Claude's own callbacks only. A connector added on claude.ai is also available in Claude Desktop, mobile and Claude Code.
-- **Claude Code with its own connection:** this signs in through `localhost` on your computer, which is off by default: allow it under **AI connections → AI apps on this computer**. Any program on your computer can then ask for access, so approve only sign-ins you just started. Then either:
-  - install the plugin, which adds the connection plus a skill for publishing, editing, uploads and undo: `/plugin install jumper-publisher --marketplace JumperMCP/jumper-publisher`, paste your MCP URL when asked, then `/mcp` to sign in; or
-  - add the server alone: `claude mcp add --transport http publisher <your MCP URL>`, then `/mcp` to sign in.
-- **Images, ZIPs and large files:** Claude can only send text through its tools. For anything else, it asks your Publisher for a one-time upload link (valid 10 minutes) and sends the file there from its code sandbox or shell, so the file never passes through the chat. On claude.ai this needs **Settings → Capabilities → Code execution and file creation** on, **Allow network egress** on, and your Publisher's address under **Additional allowed domains** (your `publisher-….workers.dev` host, or `*.workers.dev`). Claude Code needs nothing extra.
-- **After a Publisher update:** In Claude's connector settings, use **Refresh tool list** so Claude sees new tools.
-- **Access:** Each sign-in appears under **AI connections → Connected apps** with **Revoke**. The claude.ai connector used inside Claude Code shares claude.ai's sign-in, so revoking it signs out both.
+#### Notes:
 
-## Using Publisher with Codex
+- **Images, ZIPs and large files:** 
+  - Claude (via claude.ai): only sends text through its tools. For files, it asks your Publisher for a one-time upload link and sends the file there from its code sandbox or shell. The file never passes through the chat (preserving tokens). This needs **Settings → Capabilities → Code execution and file creation** switched _on_, **Allow network egress** _on_, and your Publisher's address under **Additional allowed domains** (your `publisher-….workers.dev` address). 
+  - Claude Code CLI: needs nothing extra.
+- **Access:** Each sign-in appears under **AI connections → Connected apps** with option to **Revoke**.
 
-Not yet tested; these steps follow Codex's documented MCP setup.
+### Using Publisher with Codex
 
 1. Allow sign-ins from your computer under **AI connections → AI apps on this computer**. Codex signs in through `127.0.0.1` on your computer.
 2. `codex mcp add publisher --url <your MCP URL>`
-3. `codex mcp login publisher`, then sign in with your owner password and approve access.
+3. `codex mcp login publisher`, then sign in with your Publisher owner password and _approve_.
 
-## What it can host
+### Using Publisher with Google Antigravity
 
-- Finished websites: HTML, CSS, JavaScript, images and other small files, loose or as a ZIP, with an `index.html`. React or Vue sites work if you upload the built output. (Server code is planned for v2)
+- Install the "Jumper Publisher" plugin via the official Antigravity Marketplace (submitted, approval pending).
+
+## What Publisher can host
+
+- Finished websites: HTML, CSS, JavaScript, images and other small files, loose or as a ZIP, with an `index.html`. React or Vue sites work if you upload the built output.
 - Not supported: databases, large videos, or teams (multi-user per Publisher). 
-- Hosting on your own domain: works if you tweak your Cloudflare (doing it from the chat is planned for v2). Uploaded files are served, never run (affects source code files).
-- Limits: **20 websites**, 25 MB each, files up to 10 MB (Cloudflare free plan limit is 100 Workers against max 250 MB). The last 20 versions of each website is kept for undo (Publisher limit).
+- Hosting on your own domain: works if you tweak your Cloudflare. Uploaded files are served, never run (affects source code files).
+- Limits: **20 websites**, 25 MB each, files up to 10 MB (Cloudflare free plan limit is 100 Workers against max 250 MB). The last 20 versions of each website is kept for _undo_.
 
 ## Cost and privacy
 
 - Publisher is free and MIT licensed. 
-- Publisher cannot read or edit billing details. 
-- Publisher shares your Cloudflare account's allowance with your other stuff that runs there.
+- Publisher cannot read or edit your billing details. 
+- Publisher shares your Cloudflare account's space and compute allowance with your other stuff that runs there.
 - Your sites and their traffic never pass through Jumper MCP. Jumper MCP only provides the installer. 
 - Existing sites keep working even if the installer goes down.
 - Everything you publish is public.
@@ -98,11 +112,10 @@ Not yet tested; these steps follow Codex's documented MCP setup.
 
 ## Troubleshooting
 
-- **Name already taken by a previous project:** ChatGPT asks you for another name.
-- **ChatGPT can't find your file:** Attach it again rather than letting it recreate the file from memory.
+- **Name already taken by a previous project:** Your agent asks you for another name.
 - **Published but not loading yet:** Try again in a few minutes; the upload itself probably succeeded.
 - **Out of space:** You export and delete old sites. Live sites are never removed to make room.
-- **Publishing event claims token is missing:** Grab a "Worker Scripts" API token from Cloudflare, add it in your Publisher settings (step 3).
+- **Publishing event claims token is missing:** Grab a "Worker Scripts" API token from Cloudflare (permission _edit_), add it in your Publisher settings (step 3).
 - Also see: [recovery and uninstall](docs/recovery.md).
 
 ---
@@ -212,7 +225,7 @@ Runtime tests need local workerd and loopback sockets. On NixOS set `MINIFLARE_W
 
 Tests: [projects](tests/projects.test.ts), [runtime/OAuth/MCP](tests/runtime.test.ts), [security](tests/security.test.ts), [files](tests/files.test.ts), [releases](tests/releases.test.ts).
 
-Take a peek at QUIRKS.md (running log of unexpected issues).
+Take a peek at QUIRKS.md (running log of noteworthy issues).
 
 ---
 

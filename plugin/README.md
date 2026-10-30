@@ -40,4 +40,4 @@ Static websites only: HTML, CSS, JavaScript, images and other files, or a ZIP wi
 - Documentation: https://jumpermcp.dev/publisher/docs/
 - Privacy policy: https://jumpermcp.dev/publisher/privacy/
 - Source code (MIT): https://github.com/JumperMCP/jumper-publisher
-- Support: support@jumpermcp.com
+- Support: support@jumpermcp.dev

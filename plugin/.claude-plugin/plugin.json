@@ -5,7 +5,7 @@
   "description": "Publish websites from Claude to your own Cloudflare account, then edit, undo, export or unpublish them from any later chat.",
   "author": {
     "name": "Jumper MCP",
-    "email": "support@jumpermcp.com",
+    "email": "support@jumpermcp.dev",
     "url": "https://jumpermcp.dev"
   },
   "homepage": "https://jumpermcp.dev/publisher/",
