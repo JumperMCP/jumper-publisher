@@ -103,7 +103,7 @@ The description above and the "daily use" video refer to chatgpt.com. Jumper Pub
 
 ### Antigravity
 
-- Install the "Jumper Publisher" plugin via the official Antigravity Marketplace (submitted, approval pending).
+- Install the "Jumper Publisher" plugin via the official Antigravity Marketplace (planned feature).
 
 ### Muse
 
@@ -208,6 +208,8 @@ Snapshots save to SQLite-backed Durable Object. KV holds only OAuth records. Eac
 Static routing by default. `404.html` enables 404 behavior. SPA fallback must be explicit. `_headers` (relative paths) and `_redirects` (up to 100 relative-source rules) are validated and passed as direct-upload config, and kept in snapshots and exports. Unsupported syntax and `.assetsignore` are rejected.
 
 ## Security model
+
+Report vulnerabilities privately; see [SECURITY.md](SECURITY.md).
 
 - **Two separate authorizations.** Cloudflare authorization lets the Publisher deploy; Publisher OAuth lets ChatGPT reach projects. The [installer](src/installer/worker.ts) uses public-client PKCE S256, checks required scopes before provisioning, never asks for token-creation rights, and erases its temporary credential after handoff or a one-hour expiry. Publishing then uses an account-scoped API token the owner enters on their own Publisher; OAuth refresh handoff stays off until it is verified.
 - **Owner access** ([security.ts](src/security.ts)): single-use setup token, salted PBKDF2, throttling, expiring `__Host-` cookies, exact-origin and CSRF checks on writes (sibling sites are same-site). Credentials are AES-GCM encrypted with a key in Worker secrets; refreshes are serialized, replacements stored before use, and an interrupted rotation asks you to reconnect. Recovery invalidates sessions and MCP grants. Encryption at rest won't help against malicious Publisher code or a compromised account.
