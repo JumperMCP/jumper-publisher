@@ -103,17 +103,22 @@ The description above and the "daily use" video refer to chatgpt.com. Jumper Pub
 
 ### Antigravity
 
-Needs Publisher 0.1.23 or later. Antigravity signs in through Google's page, so local sign-in can stay off.
+#### Install directly:
 
-- **Plugin** (adds the `publish-website` skill; Marketplace listing pending): clone this repository, run `agy plugin install ./jumper-publisher/antigravity`, then in the CLI `/plugin` → **jumper-publisher** → **Configure MCP servers** and paste your MCP URL. Open `/mcp`, select **jumper-publisher_mcp** → **Authenticate**, sign in, approve, and paste the code from Google's page back into Antigravity.
-- **MCP server only:** `agy mcp add publisher <your MCP URL>`, then `/mcp` → **publisher** → **Authenticate** as above.
+- **Plugin** (MCP server plus `publish-website` skill): clone this repository, run `agy plugin install ./jumper-publisher/antigravity`, then in the CLI `/plugin` → **jumper-publisher** → **Configure MCP servers** and paste your MCP URL. Open `/mcp`, select **jumper-publisher_mcp** → **Authenticate**, sign in, approve, and paste the code from Google's page back into Antigravity.
+
+#### Install from Antigravity Marketplace
+
+- (submitted, pending)
 
 ### Muse
 
-- Muse does not allow the user to install their own Connectors.  
-- Prompt Muse to install Publisher for you. It expects the server address (your `publisher-xyz.xyz.workers.dev/mcp`), and a note that it uses OAuth, and a URL _allow list_ (provide your `publisher-xyz.xyz.workers.dev`)
-- Muse installs it as needed, and presents a "Connect" button to you.
-- Consider having Muse create a "Skill" named "Publisher", to make it easier to invoke it.
+- Meta does not allow the user to install their own Muse Connectors.  
+- Prompt Muse to install Publisher for you. It expects: the server address (your `publisher-xyz.xyz.workers.dev/mcp`), that it uses OAuth, and a URL _allow list_: your `publisher-xyz.xyz.workers.dev`.
+- Muse then presents a "Connect" button to you, click and authenticate with your owner password.
+- Recommended: Have Muse create a Skill named "Publisher" for itself, to make it easier to invoke the plugin.
+
+--- 
 
 ## What Publisher can host
 
