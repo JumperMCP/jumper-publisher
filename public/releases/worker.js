@@ -7728,7 +7728,8 @@ var BUILT_IN_CALLBACKS = [
   "https://chatgpt.com/connector_platform_oauth_redirect",
   "https://claude.ai/api/mcp/auth_callback",
   "https://antigravity.google/oauth-callback",
-  "https://agent.meta.ai/api/hatch/oauth/callback"
+  "https://agent.meta.ai/api/hatch/oauth/callback",
+  "https://www.cursor.com/agents/mcp/oauth/callback"
 ];
 function callbacks(env) {
   const parsed = JSON.parse(
@@ -12710,7 +12711,7 @@ async function registrationError(metadata, env) {
       description: "Sign-in from AI apps on your own computer (localhost callbacks), such as Claude Code, is turned off. The Publisher owner can turn it on in the Publisher control panel under AI connections."
     };
   return {
-    description: "Only the verified ChatGPT, Claude, Antigravity and Muse callbacks, or localhost callbacks (public clients) when enabled, are accepted. The Publisher owner can see this refused sign-in under AI connections."
+    description: "Only the verified ChatGPT, Claude, Antigravity, Muse and Cursor callbacks, or localhost callbacks (public clients) when enabled, are accepted. The Publisher owner can see this refused sign-in under AI connections."
   };
 }
 __name(registrationError, "registrationError");
