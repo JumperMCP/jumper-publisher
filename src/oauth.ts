@@ -43,7 +43,7 @@ async function registrationError(metadata: Record<string, unknown>, env: Env) {
     };
   return {
     description:
-      "Only the verified ChatGPT, Claude, Antigravity and Muse callbacks, or localhost callbacks (public clients) when enabled, are accepted. The Publisher owner can see this refused sign-in under AI connections.",
+      "Only the verified ChatGPT, Claude, Antigravity, Muse and Cursor callbacks, or localhost callbacks (public clients) when enabled, are accepted. The Publisher owner can see this refused sign-in under AI connections.",
   };
 }
 

@@ -6,6 +6,7 @@ export const BUILT_IN_CALLBACKS = [
   "https://claude.ai/api/mcp/auth_callback",
   "https://antigravity.google/oauth-callback",
   "https://agent.meta.ai/api/hatch/oauth/callback",
+  "https://www.cursor.com/agents/mcp/oauth/callback",
 ];
 export function callbacks(env: Env): string[] {
   // CHATGPT_CALLBACKS is the pre-0.1.14 name; updates inherit Worker variables, so older installs still carry it.

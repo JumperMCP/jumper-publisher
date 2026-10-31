@@ -1,0 +1,29 @@
+{
+  "name": "jumper-publisher",
+  "description": "Publish websites from your agent to your own Cloudflare account, then edit, undo, export or unpublish them from any later chat.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jumper MCP",
+    "email": "support@jumpermcp.dev"
+  },
+  "homepage": "https://jumpermcp.dev/publisher/",
+  "repository": "https://github.com/JumperMCP/jumper-publisher",
+  "license": "MIT",
+  "keywords": [
+    "website",
+    "publishing",
+    "cloudflare",
+    "static-site",
+    "hosting"
+  ],
+  "logo": "assets/logo.png",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "PUBLISHER_URL": {
+        "type": "string",
+        "description": "The MCP URL of your own Publisher, from its control panel under AI connections. It ends in /mcp, for example https://publisher-1a2b3c4d.your-name.workers.dev/mcp. Install a Publisher first at https://publisher.jumpermcp.dev."
+      }
+    }
+  }
+}

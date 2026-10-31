@@ -264,7 +264,7 @@ test("Cloudflare scopes are validated before provisioning and refresh rejects re
     /Reconnect/,
   );
 });
-test("callbacks: built-in ChatGPT, Claude, Antigravity and Muse, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
+test("callbacks: built-in ChatGPT, Claude, Antigravity, Muse and Cursor, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
   const env = (vars: Record<string, string>) => vars as unknown as Env;
   assert.deepEqual(callbacks(env({})), BUILT_IN_CALLBACKS);
   for (const uri of [
@@ -272,6 +272,7 @@ test("callbacks: built-in ChatGPT, Claude, Antigravity and Muse, plus ALLOWED_CA
     "https://claude.ai/api/mcp/auth_callback",
     "https://antigravity.google/oauth-callback",
     "https://agent.meta.ai/api/hatch/oauth/callback",
+    "https://www.cursor.com/agents/mcp/oauth/callback",
   ])
     assert.ok(callbacks(env({})).includes(uri), uri);
   assert.ok(
@@ -303,6 +304,20 @@ test("Muse registers as a public client on its hosted callback", () => {
     ),
     true,
   );
+});
+test("Cursor: web and Cloud Agents register on the hosted callback; the desktop app also needs local sign-in", () => {
+  const web = "https://www.cursor.com/agents/mcp/oauth/callback",
+    desktop = [web, "http://localhost:8787/callback"],
+    allowed = callbacks({} as Env);
+  const register = (uris: string[], loopback: boolean) =>
+    registrationAllowed(
+      { redirect_uris: uris, token_endpoint_auth_method: "none" },
+      allowed,
+      loopback,
+    );
+  assert.equal(register([web], false), true);
+  assert.equal(register(desktop, false), false);
+  assert.equal(register(desktop, true), true);
 });
 test("hosted callbacks may register with a client secret; loopback stays public", () => {
   const claude = "https://claude.ai/api/mcp/auth_callback",

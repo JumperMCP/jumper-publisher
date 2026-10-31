@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "publisher": {
+      "url": "${PUBLISHER_URL}"
+    }
+  }
+}

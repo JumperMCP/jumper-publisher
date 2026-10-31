@@ -1,3 +1,10 @@
+# 0.1.24 — Cursor and Grok Bot can connect
+
+- **Cursor on the web, Cursor Cloud Agents and Grok Bot can sign in.** Their callback `https://www.cursor.com/agents/mcp/oauth/callback` is now built in, so an update enables it without editing Worker variables.
+- **Cursor desktop app.** It registers that callback together with `http://localhost:8787/callback`, so it also needs **Allow AI apps on this computer** under **AI connections**, like Claude Code.
+
+No migration, credential, or origin changes.
+
 # 0.1.23 — Antigravity stays connected
 
 - **No more failing background stream.** MCP clients may open a background event stream with a GET request. Publisher has no such stream, but it answered with one and closed it at once, so clients retried. Antigravity gave up after five tries and marked Publisher as failed ("standalone SSE stream: exceeded 5 retries without progress"), even though sign-in and tools worked. Publisher now answers `405 Method Not Allowed`, which tells clients there is no stream. ChatGPT, Claude and other clients already handle this.

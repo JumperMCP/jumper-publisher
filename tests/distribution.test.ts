@@ -48,11 +48,12 @@ test("the release channel serves the newest archived release and the installer f
       file,
     );
 });
-test("the Claude and Antigravity plugins share one skill, apart from the upload note", async () => {
+test("the Claude, Antigravity and Cursor plugins share one skill, apart from the upload note", async () => {
   // Each client's note on where curl runs is the only paragraph allowed to differ.
   const skill = async (dir: string) =>
     (await readFile(`${dir}/skills/publish-website/SKILL.md`, "utf8"))
       .split("\n\n")
       .filter((p) => !/^(On claude\.ai|Run `curl`)/.test(p));
-  assert.deepEqual(await skill("antigravity"), await skill("plugin"));
+  for (const dir of ["antigravity", "cursor"])
+    assert.deepEqual(await skill(dir), await skill("plugin"), dir);
 });
