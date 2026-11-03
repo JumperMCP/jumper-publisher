@@ -1,3 +1,10 @@
+# 0.1.25 — clearer refusal of attached files
+
+- **Rejected file hosts are named.** When an attached ZIP or file comes from a host Publisher has not approved, the error now names that host (hostname only, never the signed address) and says that ZIPs and single files use the same check, so switching between them does not help. It points to an upload link or inline text instead. Before, the message was generic and AI apps retried the same download.
+- **ChatGPT attachments.** ChatGPT's download host is not approved yet. The hostname in this error will tell us what to add. Until then, ChatGPT can send site files as text, or use `create_upload` from a cloud environment with unrestricted network access (or one that includes your Publisher address).
+
+No migration, credential, or origin changes.
+
 # 0.1.24 — Cursor and Grok Bot can connect
 
 - **Cursor on the web, Cursor Cloud Agents and Grok Bot can sign in.** Their callback `https://www.cursor.com/agents/mcp/oauth/callback` is now built in, so an update enables it without editing Worker variables.
