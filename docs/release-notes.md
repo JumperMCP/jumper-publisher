@@ -1,3 +1,9 @@
+# 0.1.27 — Grok can connect
+
+- **Grok can sign in.** Grok's custom connectors (grok.com → Plugins → New Connector → Custom) return to `https://grok.com/connectors-oauth-exchange-code/`, which Publisher refused. It is now built in, so an update enables it without editing Worker variables.
+
+No migration, credential, or origin changes.
+
 # 0.1.26 — ChatGPT ZIP attachments accepted
 
 - **ChatGPT's file hosts are approved.** Attached ZIPs and files from ChatGPT are downloaded from regional hosts such as `sdmntpreastus.oaiusercontent.com`, which Publisher refused because `FILE_DOWNLOAD_HOSTS` was empty. All subdomains of `oaiusercontent.com` are now built in as `*.oaiusercontent.com`, so an update enables them without editing Worker variables and other regions work too. `FILE_DOWNLOAD_HOSTS` still adds hosts and accepts the same `*.` form.

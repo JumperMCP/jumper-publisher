@@ -264,7 +264,7 @@ test("Cloudflare scopes are validated before provisioning and refresh rejects re
     /Reconnect/,
   );
 });
-test("callbacks: built-in ChatGPT, Claude, Antigravity, Muse and Cursor, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
+test("callbacks: built-in ChatGPT, Claude, Antigravity, Muse, Cursor and Grok, plus ALLOWED_CALLBACKS or legacy CHATGPT_CALLBACKS", () => {
   const env = (vars: Record<string, string>) => vars as unknown as Env;
   assert.deepEqual(callbacks(env({})), BUILT_IN_CALLBACKS);
   for (const uri of [
@@ -273,6 +273,7 @@ test("callbacks: built-in ChatGPT, Claude, Antigravity, Muse and Cursor, plus AL
     "https://antigravity.google/oauth-callback",
     "https://agent.meta.ai/api/hatch/oauth/callback",
     "https://www.cursor.com/agents/mcp/oauth/callback",
+    "https://grok.com/connectors-oauth-exchange-code/",
   ])
     assert.ok(callbacks(env({})).includes(uri), uri);
   assert.ok(
@@ -294,15 +295,31 @@ test("callbacks: built-in ChatGPT, Claude, Antigravity, Muse and Cursor, plus AL
     ).includes("http://plain.example/cb"),
   );
 });
-test("Muse registers as a public client on its hosted callback", () => {
-  const muse = "https://agent.meta.ai/api/hatch/oauth/callback";
+test("Muse and Grok register as public clients on their hosted callbacks", () => {
+  for (const uri of [
+    "https://agent.meta.ai/api/hatch/oauth/callback",
+    "https://grok.com/connectors-oauth-exchange-code/",
+  ])
+    assert.equal(
+      registrationAllowed(
+        { redirect_uris: [uri], token_endpoint_auth_method: "none" },
+        callbacks({} as Env),
+        false,
+      ),
+      true,
+      uri,
+    );
+  // Exact match: Grok's callback without the trailing slash is a different URI.
   assert.equal(
     registrationAllowed(
-      { redirect_uris: [muse], token_endpoint_auth_method: "none" },
+      {
+        redirect_uris: ["https://grok.com/connectors-oauth-exchange-code"],
+        token_endpoint_auth_method: "none",
+      },
       callbacks({} as Env),
       false,
     ),
-    true,
+    false,
   );
 });
 test("Cursor: web and Cloud Agents register on the hosted callback; the desktop app also needs local sign-in", () => {
