@@ -13935,6 +13935,16 @@ async function readBounded(stream, limit) {
   return out;
 }
 __name(readBounded, "readBounded");
+var BUILT_IN_FILE_HOSTS = ["*.oaiusercontent.com"];
+var hostApproved = /* @__PURE__ */ __name((hostname3, allowedHosts) => allowedHosts.some(
+  (entry) => entry.startsWith("*.") ? hostname3.endsWith(entry.slice(1)) && hostname3.length > entry.length - 1 : entry === hostname3
+), "hostApproved");
+function fileHosts(env) {
+  const parsed = JSON.parse(env.FILE_DOWNLOAD_HOSTS);
+  const extra = Array.isArray(parsed) ? parsed.filter((s) => typeof s === "string") : [];
+  return [.../* @__PURE__ */ new Set([...BUILT_IN_FILE_HOSTS, ...extra])];
+}
+__name(fileHosts, "fileHosts");
 function safeDownloadUrl(raw, allowedHosts) {
   let url2;
   try {
@@ -13943,7 +13953,7 @@ function safeDownloadUrl(raw, allowedHosts) {
     throw new Problem("download_blocked", "The file URL is invalid.");
   }
   requireThat(
-    url2.protocol === "https:" && !url2.username && !url2.password && !url2.port && allowedHosts.includes(url2.hostname) && !/^(localhost|.*\.localhost|.*\.local|[\d.]+|\[.*\])$/.test(url2.hostname),
+    url2.protocol === "https:" && !url2.username && !url2.password && !url2.port && hostApproved(url2.hostname, allowedHosts) && !/^(localhost|.*\.localhost|.*\.local|[\d.]+|\[.*\])$/.test(url2.hostname),
     "download_blocked",
     `The file host "${url2.hostname.slice(0, 100)}" (${url2.protocol.replace(":", "")}) has not been approved, so this file cannot be fetched. Attached ZIPs and single files use the same check, so switching between them will not help. Use create_upload if a shell is available, or send the text files inline.`
   );
@@ -46966,7 +46976,7 @@ async function importFiles(args, env, uploads) {
     );
     return uploads.files(args.uploads);
   }
-  const allowed = JSON.parse(env.FILE_DOWNLOAD_HOSTS);
+  const allowed = fileHosts(env);
   if (args.archive)
     return unzip((await download(args.archive.download_url, allowed)).body);
   if (args.file) {
