@@ -1,7 +1,14 @@
+# 0.1.26 — ChatGPT ZIP attachments accepted
+
+- **ChatGPT's file hosts are approved.** Attached ZIPs and files from ChatGPT are downloaded from regional hosts such as `sdmntpreastus.oaiusercontent.com`, which Publisher refused because `FILE_DOWNLOAD_HOSTS` was empty. All subdomains of `oaiusercontent.com` are now built in as `*.oaiusercontent.com`, so an update enables them without editing Worker variables and other regions work too. `FILE_DOWNLOAD_HOSTS` still adds hosts and accepts the same `*.` form.
+- **Still strict.** A `*.` entry matches subdomains only: `oaiusercontent.com` itself, look-alikes such as `evil-oaiusercontent.com`, other ports and plain HTTP are refused, and every redirect is checked against the same list.
+
+No migration, credential, or origin changes.
+
 # 0.1.25 — clearer refusal of attached files
 
 - **Rejected file hosts are named.** When an attached ZIP or file comes from a host Publisher has not approved, the error now names that host (hostname only, never the signed address) and says that ZIPs and single files use the same check, so switching between them does not help. It points to an upload link or inline text instead. Before, the message was generic and AI apps retried the same download.
-- **ChatGPT attachments.** ChatGPT's download host is not approved yet. The hostname in this error will tell us what to add. Until then, ChatGPT can send site files as text, or use `create_upload` from a cloud environment with unrestricted network access (or one that includes your Publisher address).
+- **ChatGPT attachments.** ChatGPT's download host was not approved. The hostname in this error identified it as `sdmntpreastus.oaiusercontent.com`; 0.1.26 approves it and its sibling regions (see above). ChatGPT can also use `create_upload` from a cloud environment with unrestricted network access (or one that includes your Publisher address).
 
 No migration, credential, or origin changes.
 

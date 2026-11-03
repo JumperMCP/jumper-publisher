@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
-import { download, readBounded, safePath, unzip } from "./files";
+import { download, fileHosts, readBounded, safePath, unzip } from "./files";
 import { Projects } from "./projects";
 import type { Uploads } from "./uploads";
 import {
@@ -84,7 +84,7 @@ export async function importFiles(
     );
     return uploads.files(args.uploads);
   }
-  const allowed = JSON.parse(env.FILE_DOWNLOAD_HOSTS) as string[];
+  const allowed = fileHosts(env);
   if (args.archive)
     return unzip((await download(args.archive.download_url, allowed)).body);
   if (args.file) {

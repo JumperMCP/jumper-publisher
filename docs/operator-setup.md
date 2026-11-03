@@ -76,7 +76,7 @@ Set these installer values:
 | `RELEASE_BASE_URL` | Release channel `https://publisher.jumpermcp.dev/releases/` (new installs follow it). A numbered folder pins one version |
 | `RELEASE_PUBLIC_KEY` | Independently distributed Ed25519 trust root |
 | `ALLOWED_CALLBACKS` | Extra exact HTTPS redirect URLs, added to the built-in ChatGPT and Claude callbacks; normally `[]`. Pre-0.1.14 name: `CHATGPT_CALLBACKS` (still read) |
-| `FILE_DOWNLOAD_HOSTS` | Exact approved HTTPS artifact hosts observed in the file experiment; initially `[]` |
+| `FILE_DOWNLOAD_HOSTS` | Extra approved HTTPS artifact hosts, exact or `*.domain` for subdomains only; initially `[]`. `*.oaiusercontent.com` (ChatGPT) is built in |
 | `REFRESH_HANDOFF_VERIFIED` | Leave `false` until the independent refresh/rotation experiment passes |
 
 Map the installer Worker to the planned custom domain. This operator configuration is not an end-user custom-domain feature. Keep logging of request URLs/bodies disabled: setup, OAuth, and download URLs can contain sensitive values. Installer hosting costs belong to Jumper MCP; never upgrade the user's plan automatically.

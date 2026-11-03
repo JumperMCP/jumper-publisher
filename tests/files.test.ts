@@ -2,7 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { zipSync } from "fflate";
 import {
+  BUILT_IN_FILE_HOSTS,
   download,
+  fileHosts,
   readBounded,
   safeDownloadUrl,
   safePath,
@@ -52,6 +54,26 @@ test("archive import preserves bytes and rejects traversal, symlinks, duplicate 
     ),
     /limits/,
   );
+});
+test("ChatGPT's file hosts are built in as a subdomain wildcard and operator hosts add to it", () => {
+  const hosts = fileHosts({ FILE_DOWNLOAD_HOSTS: '["files.example"]' });
+  assert.deepEqual(hosts, [...BUILT_IN_FILE_HOSTS, "files.example"]);
+  for (const url of [
+    "https://sdmntpreastus.oaiusercontent.com/f",
+    "https://sdmntprwestus.oaiusercontent.com/f",
+    "https://a.b.oaiusercontent.com/f",
+    "https://files.example/f",
+  ])
+    assert.ok(safeDownloadUrl(url, hosts));
+  for (const url of [
+    "https://oaiusercontent.com/f",
+    "https://evil-oaiusercontent.com/f",
+    "https://sdmntpreastus.oaiusercontent.com.evil/f",
+    "https://sdmntpreastus.oaiusercontent.com:8443/f",
+    "http://sdmntpreastus.oaiusercontent.com/f",
+    "https://sub.files.example/f",
+  ])
+    assert.throws(() => safeDownloadUrl(url, hosts));
 });
 test("downloads validate every redirect, reject private and credential-bearing destinations and enforce actual bytes", async () => {
   for (const url of [

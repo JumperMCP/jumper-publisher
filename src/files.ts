@@ -207,6 +207,22 @@ export async function readBounded(
   }
   return out;
 }
+// Hosts that serve files attached in hosted AI clients. "*.example.com" matches subdomains only, never example.com itself.
+// ChatGPT serves attachments from regional names such as sdmntpreastus.oaiusercontent.com. Operator variables add to these.
+export const BUILT_IN_FILE_HOSTS = ["*.oaiusercontent.com"];
+const hostApproved = (hostname: string, allowedHosts: string[]) =>
+  allowedHosts.some((entry) =>
+    entry.startsWith("*.")
+      ? hostname.endsWith(entry.slice(1)) && hostname.length > entry.length - 1
+      : entry === hostname,
+  );
+export function fileHosts(env: { FILE_DOWNLOAD_HOSTS: string }): string[] {
+  const parsed: unknown = JSON.parse(env.FILE_DOWNLOAD_HOSTS);
+  const extra = Array.isArray(parsed)
+    ? parsed.filter((s): s is string => typeof s === "string")
+    : [];
+  return [...new Set([...BUILT_IN_FILE_HOSTS, ...extra])];
+}
 export function safeDownloadUrl(raw: string, allowedHosts: string[]) {
   let url: URL;
   try {
@@ -219,7 +235,7 @@ export function safeDownloadUrl(raw: string, allowedHosts: string[]) {
       !url.username &&
       !url.password &&
       !url.port &&
-      allowedHosts.includes(url.hostname) &&
+      hostApproved(url.hostname, allowedHosts) &&
       !/^(localhost|.*\.localhost|.*\.local|[\d.]+|\[.*\])$/.test(url.hostname),
     "download_blocked",
     `The file host "${url.hostname.slice(0, 100)}" (${url.protocol.replace(":", "")}) has not been approved, so this file cannot be fetched. Attached ZIPs and single files use the same check, so switching between them will not help. Use create_upload if a shell is available, or send the text files inline.`,
