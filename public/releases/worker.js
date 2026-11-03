@@ -13945,7 +13945,7 @@ function safeDownloadUrl(raw, allowedHosts) {
   requireThat(
     url2.protocol === "https:" && !url2.username && !url2.password && !url2.port && allowedHosts.includes(url2.hostname) && !/^(localhost|.*\.localhost|.*\.local|[\d.]+|\[.*\])$/.test(url2.hostname),
     "download_blocked",
-    "This file host has not been approved. Attach or upload the original file through an approved source."
+    `The file host "${url2.hostname.slice(0, 100)}" (${url2.protocol.replace(":", "")}) has not been approved, so this file cannot be fetched. Attached ZIPs and single files use the same check, so switching between them will not help. Use create_upload if a shell is available, or send the text files inline.`
   );
   return url2;
 }
