@@ -102,6 +102,21 @@ The description above and the "daily use" video refer to chatgpt.com. Jumper Pub
 2. `codex mcp add publisher --url <your MCP URL>`
 3. `codex mcp login publisher`, then sign in with your Publisher owner password and _approve_.
 
+### Cursor
+
+Needs Publisher 0.1.24 or later.
+
+1. Add the plugin from `https://github.com/JumperMCP/jumper-publisher/tree/main/cursor`, choose **Add**, and set **PUBLISHER_URL** to your MCP URL.
+2. Desktop app only: allow sign-ins from your computer under **AI connections → AI apps on this computer**. Cursor on the web and Cloud Agents don't need this.
+3. **Authenticate** each environment the plugin lists (**Cloud** and **Local** sign in separately), then sign in with your Publisher owner password and _approve_. If Local later shows "fetch failed", choose **Reload** and authenticate again.
+
+### Grok Bot
+
+Needs Publisher 0.1.27 or later. Grok Bot adds Publisher as a connector by MCP URL; nothing else to configure, and a connector can't be edited after sign-in.
+
+- Grok Bot chat: **Plugins → New Connector → Custom**, paste your MCP URL and a name, sign in, _approve_.
+- Dashboard (grok.com/dashboard/plugins): **Add → Custom MCP**, paste your MCP URL, sign in, _approve_.
+
 ### Antigravity
 
 #### Install directly:

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>getonup vs Jumper Publisher</title>
+  <meta name="description" content="Two open-source ways to put AI-built pages on a public URL. One starts in your terminal, one in your chat. Pick a job and watch both routes.">
+  <meta property="og:title" content="getonup vs Jumper Publisher">
+  <meta property="og:description" content="Same destination, two routes. Pick a job and watch both tools run it.">
+  <meta name="theme-color" content="#0b1426">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='16' height='32' fill='%230b1426'/%3E%3Crect x='16' width='16' height='32' fill='%23edf2f4'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23f38020'/%3E%3C/svg%3E">
+  <script type="module" crossorigin src="./assets/index-BCy7p2dj.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CVWBaWk5.css">
+</head>
+<body>
+  <a class="skip" href="#compare">Skip the animation</a>
+  <h1 class="sr">getonup vs Jumper Publisher</h1>
+
+  <header class="topbar">
+    <div class="riders" role="tablist" aria-label="View">
+      <button role="tab" type="button" id="rider-workflows" aria-controls="workflows" data-view="workflows">Workflows</button>
+      <button role="tab" type="button" id="rider-compare" aria-controls="compare" data-view="compare">Compare</button>
+    </div>
+    <nav class="toplinks" aria-label="Source code">
+      <a class="toplink" href="https://github.com/vitorbaptista/getonup">getonup on GitHub</a>
+      <a class="toplink" href="https://github.com/JumperMCP/jumper-publisher">Jumper Publisher on GitHub</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="workflows" role="tabpanel" aria-labelledby="rider-workflows">
+    <header class="head g" aria-hidden="true">
+      <div class="name">getonup</div>
+      <p class="tag">Publishes from your terminal.</p>
+    </header>
+    <div class="vs" aria-hidden="true">vs</div>
+    <header class="head j" aria-hidden="true">
+      <div class="name">Jumper Publisher</div>
+      <p class="tag">Publishes from your chat.</p>
+    </header>
+    <p class="sr">One starts in your terminal, one in your chat. Both end at a public URL on Cloudflare.</p>
+
+    <div class="stage" id="stage">
+      <p class="stage-note" id="stage-note">Loading the routes</p>
+    </div>
+
+    <div class="cap g" id="cap-g"></div>
+    <div class="cap j" id="cap-j"></div>
+
+    <div class="playbar">
+      <button class="play" id="play" type="button"></button>
+      <p class="bar-label" id="jobs-label">Same job, two routes.</p>
+      <div class="chapters" role="radiogroup" aria-labelledby="jobs-label" id="chapters"></div>
+    </div>
+  </section>
+
+  <div id="compare" role="tabpanel" aria-labelledby="rider-compare" hidden>
+    <div class="panels">
+      <section class="pitch" id="pitch" aria-label="One advantage and one disadvantage each">
+        <div class="vs" aria-hidden="true">vs</div>
+        <div class="side g">
+          <header class="head g">
+            <h2 class="name">getonup</h2>
+            <p class="tag">Publishes from your terminal.</p>
+          </header>
+          <div class="pitch-body">
+            <p class="pro"><span class="sr">Advantage: </span>A bare <code>.tsx</code> goes live with one command.</p>
+            <p class="con"><span class="i" data-icon="cross"></span><span><span class="sr">Disadvantage: </span>No version history. <code>--id</code> overwrites whatever was there.</span></p>
+          </div>
+        </div>
+        <div class="side j">
+          <header class="head j">
+            <h2 class="name">Jumper Publisher</h2>
+            <p class="tag">Publishes from your chat.</p>
+          </header>
+          <div class="pitch-body">
+            <p class="pro"><span class="sr">Advantage: </span>Come back weeks later, in any chat, and change it.</p>
+            <p class="con"><span class="i" data-icon="cross"></span><span><span class="sr">Disadvantage: </span>No auto-wrap. A bare <code>.tsx</code> has to be built first.</span></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel ids must differ from the URL hashes, or the browser focuses the panel when a shared link opens. -->
+      <div role="tabpanel" id="panel-differ" aria-labelledby="tab-differ" tabindex="0" class="panel" hidden>
+        <h2 class="sr">Where they differ</h2>
+        <div class="cols" aria-hidden="true">
+          <div class="side g"><span class="col-name">getonup</span></div>
+          <div class="side j"><span class="col-name">Jumper Publisher</span></div>
+        </div>
+        <article class="row">
+          <h3 class="topic">Hosting</h3>
+          <div class="side g"><p class="big">One server, many deploys.</p><p>A self-hosted Worker and R2 bucket a whole team can share. Also runs locally on Miniflare.</p></div>
+          <div class="side j"><p class="big">One install, yours alone.</p><p>Lives in your own Cloudflare account, free or paid. Each website gets its own Worker and address.</p></div>
+        </article>
+        <article class="row">
+          <h3 class="topic">Interface</h3>
+          <div class="side g"><p class="big">CLI first.</p><p>A snippet in <code>AGENTS.md</code> lets any coding agent run <code>getonup deploy</code>. Also has a local stdio MCP server.</p></div>
+          <div class="side j"><p class="big">Chat first.</p><p>A remote MCP connector for ChatGPT, Claude and Codex, plus a web Cockpit. Claude Code can connect too.</p></div>
+        </article>
+        <article class="row">
+          <h3 class="topic">What you hand it</h3>
+          <div class="side g"><p class="big">Raw source is fine.</p><p>Bare <code>.tsx</code>, <code>.vue</code> or <code>.js</code> gets wrapped with React 18, Babel, Tailwind and esm.sh. HTML and built folders work too.</p></div>
+          <div class="side j"><p class="big">Finished files.</p><p>HTML, CSS, JS and images, or a ZIP, including built React or Vue output. Source files are served, never run.</p></div>
+        </article>
+        <article class="row">
+          <h3 class="topic">Going back</h3>
+          <div class="side g"><p class="big">Overwrite or start fresh.</p><p><code>--id</code> overwrites a stable URL. Otherwise every deploy gets a new throwaway link.</p></div>
+          <div class="side j"><p class="big">A 20-version undo.</p><p>A persistent project, a safeguard against oversized rewrites, and protection when two chats edit one site.</p></div>
+        </article>
+        <article class="row">
+          <h3 class="topic">The URL</h3>
+          <div class="side g"><p class="url">pages.example.com<wbr>/s/iwcmg3dt</p><p>Paths on one shared host by default. Per-deploy subdomains are optional.</p></div>
+          <div class="side j"><p class="url">pants-math.you<wbr>.workers.dev</p><p>A separate origin for every site. Your own domain takes a manual step in Cloudflare.</p></div>
+        </article>
+        <article class="row">
+          <h3 class="topic">Setup</h3>
+          <div class="side g"><p class="big">Developer setup.</p><p>Clone, create an R2 bucket, set a token, <code>npm run deploy</code>, <code>getonup login</code>. Public instances need a WAF rate limit.</p></div>
+          <div class="side j"><p class="big">Guided install.</p><p>A browser installer, one Cloudflare API token in your Publisher, then your MCP URL in your AI client.</p></div>
+        </article>
+        <article class="row">
+          <h3 class="topic">Limits</h3>
+          <div class="side g"><p class="big">20 MiB, 300 files.</p><p>Per deploy, and both are defaults you can change in your server config.</p></div>
+          <div class="side j"><p class="big">20 sites, 25 MB each.</p><p>Files up to 10 MB each. Sites share your Cloudflare account's allowance.</p></div>
+        </article>
+      </div>
+
+      <div role="tabpanel" id="panel-overlap" aria-labelledby="tab-overlap" tabindex="0" class="panel" hidden>
+        <h2 class="sr">Where they overlap</h2>
+        <div class="cols three" aria-hidden="true">
+          <div class="side g"><span class="col-name">getonup</span></div>
+          <div class="core-head">Both</div>
+          <div class="side j"><span class="col-name">Jumper Publisher</span></div>
+        </div>
+        <article class="meet">
+          <div class="side g"><p>A CLI and an agent snippet get the file out.</p></div>
+          <div class="core"><h3>Resolve the same frustration</h3><p>Getting an AI-built page out of the chat window and onto a public URL, without GitHub or a traditional hosting setup.</p></div>
+          <div class="side j"><p>A chat connector gets the file out.</p></div>
+        </article>
+        <article class="meet">
+          <div class="side g"><p>One Worker plus an R2 bucket.</p></div>
+          <div class="core"><h3>Built on Cloudflare</h3><p>Both use Cloudflare Workers as the engine behind every published page.</p></div>
+          <div class="side j"><p>Workers, KV and a SQLite Durable Object.</p></div>
+        </article>
+        <article class="meet">
+          <div class="side g"><p><code>AGENTS.md</code>, a Claude Code skill, stdio MCP.</p></div>
+          <div class="core"><h3>Made for agents</h3><p>In both cases the agent publishes its own work. You never upload anything by hand.</p></div>
+          <div class="side j"><p>Remote MCP with OAuth sign-in.</p></div>
+        </article>
+        <article class="meet">
+          <div class="side g"><p>Wrapped pages load their dependencies from CDNs.</p></div>
+          <div class="core"><h3>Static and client-side</h3><p>Neither runs server-side code or gives you a database.</p></div>
+          <div class="side j"><p>Server code is planned. No database support.</p></div>
+        </article>
+      </div>
+
+      <div role="tabpanel" id="panel-match" aria-labelledby="tab-match" tabindex="0" class="panel" hidden>
+        <div class="cols" aria-hidden="true">
+          <div class="side g"><span class="col-name">getonup</span></div>
+          <div class="side j"><span class="col-name">Jumper Publisher</span></div>
+        </div>
+        <div class="match-body">
+          <h2 class="same-title">Exactly the same in both</h2>
+          <div class="same">
+            <article>
+              <h3>A public URL</h3>
+              <p>Each ends in a lightweight public address, on <code>workers.dev</code> or your own domain, showing what your AI wrote.</p>
+            </article>
+            <article>
+              <h3>MIT licensed</h3>
+              <p>Read the licenses: <a href="https://github.com/vitorbaptista/getonup/blob/main/LICENSE">getonup</a> and <a href="https://github.com/JumperMCP/jumper-publisher/blob/main/LICENSE">Jumper Publisher</a>.</p>
+            </article>
+            <article>
+              <h3>No pipeline</h3>
+              <p>No CI/CD, no Git repository to set up and no separate build server, at least for simple pages and snippets.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="panel-both" aria-labelledby="tab-both" tabindex="0" class="panel" hidden>
+        <h2 class="sr">Using both</h2>
+        <div class="both-band">
+          <p class="both-cap" id="both-cap" aria-live="off">Start in the scratchpad, then promote what you keep.</p>
+        </div>
+        <div class="stage stage-both" id="stage-both"></div>
+
+        <div class="phases">
+          <div class="side g">
+            <h3>The scratchpad phase</h3>
+            <p class="lead">You work in a terminal or IDE, or run agents from scripts.</p>
+            <p>An agent writes a bare <code>Dashboard.tsx</code> and getonup returns a preview URL with no project setup. A throwaway CodePen for AI output: links are public, and <code>getonup serve</code> stays on your machine.</p>
+          </div>
+          <div class="side j">
+            <h3>The lifecycle phase</h3>
+            <p class="lead">You talk to chat agents, or want sites to persist in your own account.</p>
+            <p>Publisher keeps revisions in a SQLite Durable Object. Weeks later, a new chat can “change the button to green”, and you can roll back if the agent breaks something.</p>
+          </div>
+        </div>
+
+        <div class="when">
+          <h3>When both make sense</h3>
+          <article>
+            <h4>Exploring, then demoing</h4>
+            <p>getonup while an agent tries UI ideas. Publisher once the finished bundle needs a home, revisions and edits from chat.</p>
+          </article>
+          <article>
+            <h4>Agents in several places</h4>
+            <p>Terminal agents call getonup from <code>AGENTS.md</code>. Web and mobile chat agents reach Publisher through an OAuth MCP connector.</p>
+          </article>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="panel-install" aria-labelledby="tab-install" tabindex="0" class="panel" hidden>
+        <div class="picker">
+          <h2 id="picker-q">Where do your agents run?</h2>
+          <div class="picker-btns" role="group" aria-labelledby="picker-q">
+            <button type="button" aria-pressed="false" data-env="terminal"><span class="i" data-icon="terminal"></span>Terminal or IDE</button>
+            <button type="button" aria-pressed="false" data-env="chat"><span class="i" data-icon="chat"></span>Chat apps</button>
+          </div>
+          <div class="answer" id="answer" aria-live="polite" data-side="none"></div>
+        </div>
+        <div class="get">
+          <div class="side g">
+            <h3 class="col-name">getonup</h3>
+            <p><code>npm i -g getonup</code>, then <code>getonup login</code> to a server you run.</p>
+            <a class="cta" href="https://github.com/vitorbaptista/getonup#install">Install getonup from npm</a>
+            <a class="src" href="https://github.com/vitorbaptista/getonup">Source on GitHub</a>
+          </div>
+          <div class="side j">
+            <h3 class="col-name">Jumper Publisher</h3>
+            <p>A guided installer in your browser, then add your MCP URL to your AI client.</p>
+            <a class="cta" href="https://publisher.jumpermcp.dev/">Install Jumper Publisher</a>
+            <a class="src" href="https://github.com/JumperMCP/jumper-publisher">Source on GitHub</a>
+          </div>
+        </div>
+        <p class="checked">Checked against both projects' READMEs and docs on 5 November 2026.</p>
+      </div>
+    </div>
+
+    <div class="playbar">
+      <button class="play vs-btn" id="vs-btn" type="button" aria-label="Back to the overview" title="Back to the overview">vs</button>
+      <p class="bar-label" id="cmp-label">Two tools, up close.</p>
+      <div class="chapters nav" role="tablist" aria-labelledby="cmp-label" id="cmp-tabs">
+        <button role="tab" type="button" id="tab-differ" aria-controls="panel-differ" data-hash="differ"><span><span class="long">Where they </span><span class="cap1">differ</span></span><i class="track"><i class="fill"></i></i></button>
+        <button role="tab" type="button" id="tab-overlap" aria-controls="panel-overlap" data-hash="overlap"><span><span class="long">Where they </span><span class="cap1">overlap</span></span><i class="track"><i class="fill"></i></i></button>
+        <button role="tab" type="button" id="tab-match" aria-controls="panel-match" data-hash="match"><span><span class="long">Where they </span><span class="cap1">match</span></span><i class="track"><i class="fill"></i></i></button>
+        <button role="tab" type="button" id="tab-both" aria-controls="panel-both" data-hash="both"><span><span class="long">Using </span><span class="cap1">both</span></span><i class="track"><i class="fill"></i></i></button>
+        <button role="tab" type="button" id="tab-install" aria-controls="panel-install" data-hash="install"><span>Install</span><i class="track"><i class="fill"></i></i></button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
