@@ -192,9 +192,7 @@ Needs Publisher 0.1.27 or later. Grok Bot adds Publisher as a connector by MCP U
 
 </details>
 
----
-
-Also see **[getonup VS Publisher](https://getonup-vs-jumper.anita-nyc-tattoo.workers.dev/)**
+Also see our **[getonup VS Publisher](https://getonup-vs-jumper.anita-nyc-tattoo.workers.dev/)** comparison
 
 ---
 
