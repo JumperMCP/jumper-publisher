@@ -1,6 +1,6 @@
 # Jumper Publisher
 
-Ask Claude, ChatGPT or another Ai agent to create a web page. Once done, you receive a public URL where it is hosted.  
+Ask Claude, ChatGPT or another AI agent to create a web page. Once done, you receive a public URL where it is hosted.  
 
 Come back weeks later in a new chat to make changes the the website, even in a different AI agent. The website lives in **your own Cloudflare account** (free or paid). **Publisher** is your perfect solution for personal pages and small projects that need to be visible right away.
 
@@ -104,17 +104,14 @@ The description above and the "daily use" video refer to chatgpt.com. Jumper Pub
 
 ### Cursor
 
-Needs Publisher 0.1.24 or later.
-
 1. Add the plugin from `https://github.com/JumperMCP/jumper-publisher/tree/main/cursor`, choose **Add**, and set **PUBLISHER_URL** to your MCP URL.
 2. Desktop app only: allow sign-ins from your computer under **AI connections → AI apps on this computer**. Cursor on the web and Cloud Agents don't need this.
 3. **Authenticate** each environment the plugin lists (**Cloud** and **Local** sign in separately), then sign in with your Publisher owner password and _approve_. If Local later shows "fetch failed", choose **Reload** and authenticate again.
 
 ### Grok Bot
 
-Needs Publisher 0.1.27 or later. Grok Bot adds Publisher as a connector by MCP URL; nothing else to configure, and a connector can't be edited after sign-in.
-
-- Grok Bot chat: **Plugins → New Connector → Custom**, paste your MCP URL and a name, sign in, _approve_.
+- Grok Bot adds Publisher as a connector by MCP URL. It can't be edited after sign-in (only re-installed).
+- In Grok Bot chat: **Plugins → New Connector → Custom**, paste your MCP URL and a name, sign in, _approve_.
 - Dashboard (grok.com/dashboard/plugins): **Add → Custom MCP**, paste your MCP URL, sign in, _approve_.
 
 ### Antigravity
@@ -129,10 +126,16 @@ Needs Publisher 0.1.27 or later. Grok Bot adds Publisher as a connector by MCP U
 
 ### Muse
 
-- Meta does not allow the user to install their own Muse Connectors.  
+#### Muse (personal agent)
+
+- Users cannot install plugins themselves.  
 - Prompt Muse to install Publisher for you. It expects: the server address (your `publisher-xyz.xyz.workers.dev/mcp`), that it uses OAuth, and a URL _allow list_: your `publisher-xyz.xyz.workers.dev`.
 - Muse then presents a "Connect" button to you, click and authenticate with your owner password.
 - Recommended: Have Muse create a Skill named "Publisher" for itself, to make it easier to invoke the plugin.
+
+#### Muse Code
+
+- not tested
 
 --- 
 
@@ -200,7 +203,7 @@ Also see our **[getonup VS Publisher](https://getonup-vs-jumper.anita-nyc-tattoo
 
 ## Verification
 
-Current release 0.1.12 was signed and served from the installer domain ([release notes](docs/release-notes.md)). An independent tester on a separate Cloudflare account completed installation, owner setup, ChatGPT connection, publishing, and discovery plus editing from an unrelated smartphone session, and updated through several releases. Not yet measured: file and generated-image transfer from ChatGPT attachments, Cloudflare OAuth refresh (hence the API token in setup step 3), and free-plan CPU and memory under the maximum limits. Details: [acceptance ledger](docs/acceptance.md). To run your own installer: [operator runbook](docs/operator-setup.md).
+Releases are signed and served from the installer domain ([release notes](docs/release-notes.md)). An independent tester on a separate Cloudflare account completed installation, owner setup, ChatGPT connection, publishing, and discovery plus editing from an unrelated smartphone session, and updated through several releases. Not yet measured: file and generated-image transfer from ChatGPT attachments, Cloudflare OAuth refresh (hence the API token in setup step 3), and free-plan CPU and memory under the maximum limits. Details: [acceptance ledger](docs/acceptance.md). To run your own installer: [operator runbook](docs/operator-setup.md).
 
 ## Architecture
 
